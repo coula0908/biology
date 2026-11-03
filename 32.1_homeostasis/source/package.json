@@ -5,9 +5,9 @@
   "description": "General Biology 32.1 Homeostasis — bilingual (EN/KO) presentation deck generator",
   "main": "build.js",
   "scripts": {
-    "build": "node build.js short && node build.js full",
-    "build:short": "node build.js short",
-    "build:full": "node build.js full"
+    "build": "node build.js main && node build.js short",
+    "build:main": "node build.js main",
+    "build:short": "node build.js short"
   },
   "dependencies": {
     "pptxgenjs": "4.0.1",

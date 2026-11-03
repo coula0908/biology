@@ -13,9 +13,10 @@ const md = require("react-icons/md");
 const tb = require("react-icons/tb");
 
 // Usage: node build.js <full|short> [out.pptx]
-const VARIANT = process.argv[2] || "short";
-if (!["full", "short"].includes(VARIANT)) throw new Error(`unknown variant "${VARIANT}" (use full or short)`);
-const OUT = path.resolve(process.argv[3] || path.join(__dirname, "..", `32.1_Homeostasis_${VARIANT}.pptx`));
+const VARIANT = process.argv[2] || "main";
+if (!["main", "short"].includes(VARIANT)) throw new Error(`unknown variant "${VARIANT}" (use main or short)`);
+const FILE = { main: "32.1_Homeostasis.pptx", short: "32.1_Homeostasis_short.pptx" }[VARIANT];
+const OUT = path.resolve(process.argv[3] || path.join(__dirname, "..", FILE));
 const NOTES = require(`./notes_${VARIANT}.js`);
 function NOTE(id) {
   if (!NOTES[id]) throw new Error(`no ${VARIANT} speaker notes for slide "${id}"`);
@@ -266,7 +267,7 @@ SL.case = async () => {
     const rows = [
       { big: "41.1°C", f: "106°F", who: "Kierann Smith · triathlete", what: "Core body temperature at collapse → ice water + ice packs brought it just below 40°C (104°F). She survived.", col: C.accent3 },
       { big: "41.6°C", f: "107°F", who: "Ben Richards · wrestler, 20", what: "Collapsed during a 5-mile training run (2013); died 10 days later.", col: C.accent1 },
-      { big: "2014", f: "cause: heat stroke", who: "Marquese Meadow · football, freshman", what: "Disoriented after practice; died in a nearby hospital. Autopsy confirmed heat stroke as the cause of death.", col: C.accent1 },
+      { big: "2014", f: "cause: heat stroke", who: "Marquese Meadow · football player, freshman", what: "Disoriented after practice; died in a nearby hospital. Autopsy confirmed heat stroke as the cause of death.", col: C.accent1 },
     ];
     let y = 1.95;
     for (const r of rows) {
@@ -280,12 +281,12 @@ SL.case = async () => {
 };
 
 SL.roadmap = async () => {
-    const s = contentSlide("Opening", "OVERVIEW", T_REV, "Today’s Roadmap", "오늘 다룰 내용 — 교재의 Check Your Learning 4가지 질문");
+    const s = contentSlide("Opening", "OVERVIEW", T_REV, "Today’s Roadmap", "오늘 다룰 내용 — 교재의 학습 목표(Check Your Learning) 네 가지");
     const items = [
-      { n: "1", en: "What is homeostasis — and why do organisms maintain it?", kr: "항상성의 정의와 유지 이유", I: fa.FaBalanceScale, col: C.text2 },
-      { n: "2", en: "How do ectotherms and endotherms differ?", kr: "외온동물 vs. 내온동물", I: fa.FaThermometerHalf, col: C.accent3 },
-      { n: "3", en: "Why is negative feedback crucial for homeostasis?", kr: "음성피드백이 중요한 이유", I: fa.FaSyncAlt, col: C.accent2 },
-      { n: "4", en: "What is positive feedback — and why is it rare?", kr: "양성피드백과 그것이 드문 이유", I: tb.TbArrowBigUpLines, col: C.accent1 },
+      { n: "1", en: "What is homeostasis — and why do organisms maintain it?", kr: "항상성이란 무엇이고, 왜 유지할까?", I: fa.FaBalanceScale, col: C.text2 },
+      { n: "2", en: "How do ectotherms and endotherms differ?", kr: "외온동물과 내온동물은 어떻게 다를까?", I: fa.FaThermometerHalf, col: C.accent3 },
+      { n: "3", en: "Why is negative feedback crucial for homeostasis?", kr: "음성피드백은 왜 중요할까?", I: fa.FaSyncAlt, col: C.accent2 },
+      { n: "4", en: "What is positive feedback — and why is it rare?", kr: "양성피드백이란 무엇이고, 왜 드물까?", I: tb.TbArrowBigUpLines, col: C.accent1 },
     ];
     const w = 2.86, gap = 0.23;
     for (let i = 0; i < 4; i++) {
@@ -349,10 +350,10 @@ SL.what = async () => {
 };
 
 SL.dynamic = async () => {
-    const s = contentSlide("1. What & Why", "PART 1 · WHAT & WHY", T_PART, "Homeostasis Is Dynamic, Not Static", "‘동일하게 유지하려는 것’이지만, 내부 환경은 끊임없이 조절된다");
+    const s = contentSlide("1. What & Why", "PART 1 · WHAT & WHY", T_PART, "Homeostasis Is Dynamic, Not Static", "말뜻은 ‘같은 상태로 머무르다’이지만, 내부 환경은 끊임없이 조절된다");
     // left concept
     card(s, 0.6, 1.95, 3.9, 4.75, { fill: C.background2, r: 0.16 });
-    text(s, [t("“homeostasis”", { bold: true, color: C.accent2, fontSize: 22, breakLine: true }), t("= “to stay the same”", { fontSize: 17, breakLine: true }), t("(동일하게 유지하려는 것)", { fontSize: 14, color: C.accent4 })], 0.85, 2.15, 3.45, 1.35, {});
+    text(s, [t("“homeostasis”", { bold: true, color: C.accent2, fontSize: 22, breakLine: true }), t("= “to stay the same”", { fontSize: 17, breakLine: true }), t("(같은 상태로 머무르다)", { fontSize: 14, color: C.accent4 })], 0.85, 2.15, 3.45, 1.35, {});
     text(s, [t("The word implies a static, unchanging state — but the internal environment actually "), b("seethes with activity", { color: C.accent1 }), t(" as the body continuously adjusts to maintain constancy amid varying internal and external conditions.")], 0.85, 3.6, 3.45, 2.0, { fontSize: 15 });
     chip(s, 0.85, 5.95, "dynamic equilibrium", "동적인 평형상태", { col: C.accent2, size: 13, h: 0.42 });
     // right flow: exercise -> demands -> responses
@@ -393,7 +394,8 @@ SL.enzymes = async () => {
     // Left: structure
     card(s, 0.6, 1.95, 6.35, 4.0, { fill: C.background2, r: 0.16 });
     text(s, [b("① Structure ", { color: C.accent2 }), t("(구조)", { color: C.accent4 })], 0.85, 2.1, 5.9, 0.42, { fontSize: 19 });
-    text(s, [t("Almost every reaction in a cell is catalyzed by a specific "), b("enzyme"), t(" (효소). Its function depends on its precise "), b("three-dimensional structure"), t(", maintained in part by "), b("hydrogen bonds", { color: C.accent2 }), t(" (수소결합).")], 0.85, 2.55, 5.9, 1.25, { fontSize: 15 });
+    // explicit line breaks keep each Korean gloss on the line of its English term (widths measured)
+    text(s, [t("Almost every reaction in a cell is catalyzed by a specific", { breakLine: true }), b("enzyme"), t(" (효소). Its function depends on its precise", { breakLine: true }), b("three-dimensional structure"), t(", maintained in part by", { breakLine: true }), b("hydrogen bonds", { color: C.accent2 }), t(" (수소결합).")], 0.85, 2.55, 5.9, 1.15, { fontSize: 15 });
     const folded = await svgPng(ENZ_FOLDED, 700), broken = await svgPng(ENZ_BROKEN, 700);
     s.addImage({ data: folded, x: 0.95, y: 3.75, w: 2.45, h: 1.75, altText: "Folded enzyme with substrate in its active site" });
     s.addImage({ data: broken, x: 4.15, y: 3.75, w: 2.45, h: 1.75, altText: "Unfolded enzyme with disrupted hydrogen bonds" });
@@ -401,7 +403,7 @@ SL.enzymes = async () => {
     text(s, "works", 0.95, 5.5, 2.45, 0.3, { fontSize: 13, bold: true, color: C.accent2, align: "center" });
     text(s, "bonds disrupted", 4.15, 5.5, 2.45, 0.3, { fontSize: 13, bold: true, color: C.accent1, align: "center" });
     // stressor chips (bottom row, left)
-    const st = [["too salty", "극염"], ["too acidic", "극산성"], ["too basic", "극염기성"], ["too hot", "너무 뜨거움"]];
+    const st = [["too salty", "염분 과다"], ["too acidic", "강산성"], ["too basic", "강염기성"], ["too hot", "고온"]];
     let cx = 0.6;
     for (const [en, k] of st) cx += chip(s, cx, 6.2, en, k, { col: C.accent1, size: 12, h: 0.42 }) + 0.1;
     // Right: rate
@@ -420,7 +422,7 @@ SL.enzymes = async () => {
     // conclusion (bottom row, right)
     const ccx = cx + 0.1;
     card(s, ccx, 6.2, 12.73 - ccx, 0.42, { fill: C.text2, r: 0.21 });
-    text(s, [t("→ need a narrow range of ", { color: C.background1 }), b("salt, pH, temperature", { color: C.accent3 })], ccx + 0.1, 6.2, 12.73 - ccx - 0.2, 0.42, { fontSize: 13, valign: "middle", align: "center" });
+    text(s, [t("→ keep ", { color: C.background1 }), b("salt, pH & temperature", { color: C.accent3 }), t(" in narrow ranges", { color: C.background1 })], ccx + 0.1, 6.2, 12.73 - ccx - 0.2, 0.42, { fontSize: 13, valign: "middle", align: "center" });
     s.addNotes(NOTE("enzymes"));
 };
 
@@ -440,7 +442,7 @@ SL.case2 = async () => {
     arrow(s, 8.35, 3.27, 8.95, 3.27, { col: C.accent1 });
     card(s, 9.0, 2.55, 3.73, 1.45, { fill: C.accent1, transparency: 85 });
     await iconCircle(s, 9.15, 2.85, 0.85, gi.GiKidneys, { bg: C.accent1, name: "kidneys" });
-    text(s, [b("Kidney failure", { breakLine: true }), t("신부전 (kidneys: 신장)", { color: C.accent4, fontSize: 14 })], 10.15, 2.62, 2.5, 1.3, { fontSize: 16, valign: "middle" });
+    text(s, [b("Kidney failure", { breakLine: true }), t("신부전", { color: C.accent4, fontSize: 14 })], 10.15, 2.62, 2.5, 1.3, { fontSize: 16, valign: "middle" });
     // branch B: temp -> liver
     card(s, 4.0, 4.4, 4.3, 1.45, { fill: C.background2 });
     await iconCircle(s, 4.15, 4.7, 0.85, fa.FaThermometerFull, { bg: C.accent4, name: "elevated temperature" });
@@ -456,8 +458,8 @@ SL.case2 = async () => {
 };
 
 SL.warmcold = async () => {
-    const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "“Warm-Blooded” or “Cold-Blooded”?", "온혈 혹은 냉혈? — 이 용어들은 종종 오해의 소지가 있다");
-    text(s, [t("Mammals and birds are often called "), b("“warm-blooded”", { color: C.accent1 }), t(" (온혈); other reptiles, amphibians, fish, and invertebrates "), b("“cold-blooded”", { color: C.accent2 }), t(" (냉혈). But these terms are often "), b("misleading"), t(":")], 0.6, 1.92, 12.13, 0.75, { fontSize: 16 });
+    const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "“Warm-Blooded” or “Cold-Blooded”?", "온혈동물일까, 냉혈동물일까? — 이 용어들은 오해를 부르기 쉽다");
+    text(s, [t("Mammals and birds are often called "), b("“warm-blooded”", { color: C.accent1 }), t(" (온혈); other reptiles, amphibians, fish, and invertebrates", { breakLine: true }), b("“cold-blooded”", { color: C.accent2 }), t(" (냉혈). But these terms are often "), b("misleading"), t(":")], 0.6, 1.92, 12.13, 0.75, { fontSize: 16 });
     const cards = [
       { p: PHOTO.pupfish, x: 0.6, title: "Desert pupfish", kr: "사막 pupfish — ‘냉혈’ 물고기", stat: "> 37.8°C", statF: "over 100°F", desc: "when the summer sun heats the springs and small ponds where it lives — so pupfish are sometimes quite “warm-blooded.”", col: C.accent1, pos: "centre" },
       { p: PHOTO.humming, x: 6.77, title: "Hummingbird", kr: "벌새 — ‘온혈’ 조류", stat: "40.5 → 13°C", statF: "105°F by day → 55°F at night", desc: "as high as 40.5°C while foraging during the day, but may cool down to 13°C during the night.", col: C.accent2, pos: "centre" },
@@ -477,18 +479,18 @@ SL.warmcold = async () => {
 };
 
 SL.ectoendo = async () => {
-    const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Ectotherms vs. Endotherms", "외온동물 vs. 내온동물 — 체온 유지를 위한 주요 열원(熱源)으로 분류");
+    const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Ectotherms vs. Endotherms", "외온동물과 내온동물 — 열을 주로 어디서 얻는가에 따른 분류");
     text(s, "To avoid confusion, scientists classify animals by their major source of body warmth.", 0.6, 1.92, 12.13, 0.4, { fontSize: 16, color: C.text1 });
     const cols = [
-      { x: 0.6, col: C.accent2, colHex: HEX.teal, title: "ECTOTHERMS", kr: "외온동물", greek: "Greek: “outside heat” (외부열)", I: fa.FaSun, src: "derive most of their heat from the environment", ex: [["Reptiles (except birds)", gi.GiGecko], ["Amphibians", gi.GiFrog], ["Most fish", fa.FaFish], ["Most invertebrates", gi.GiButterfly]], note: "Simplest cases — an earthworm in its burrow or a fish in a stream: body temperature = environment temperature." },
-      { x: 6.77, col: C.accent1, colHex: HEX.coral, title: "ENDOTHERMS", kr: "내온동물", greek: "Greek: “inside heat” (내부열)", I: fa.FaFire, src: "produce most of their heat by metabolic reactions (대사반응)", ex: [["Birds", gi.GiHummingbird], ["Mammals", fa.FaPaw]], note: "Birds and mammals are the most common endotherms; some other animals occasionally generate significant heat metabolically." },
+      { x: 0.6, col: C.accent2, colHex: HEX.teal, title: "ECTOTHERMS", kr: "외온동물", greek: "Greek: “outside heat” (외부열)", I: fa.FaSun, src: [t("Derive most of their heat", { breakLine: true }), t("from the "), b("environment"), t(".")], ex: [["Reptiles (except birds)", gi.GiGecko], ["Amphibians", gi.GiFrog], ["Most fish", fa.FaFish], ["Most invertebrates", gi.GiButterfly]], note: "Simplest cases — an earthworm in its burrow or a fish in a stream: body temperature = environment temperature." },
+      { x: 6.77, col: C.accent1, colHex: HEX.coral, title: "ENDOTHERMS", kr: "내온동물", greek: "Greek: “inside heat” (내부열)", I: fa.FaFire, src: [t("Produce most of their heat", { breakLine: true }), t("by "), b("metabolic reactions"), t(" (대사반응).")], ex: [["Birds", gi.GiHummingbird], ["Mammals", fa.FaPaw]], note: "Birds and mammals are the most common endotherms; some other animals occasionally generate significant heat metabolically." },
     ];
     for (const c of cols) {
       const w = 5.96;
       card(s, c.x, 2.5, w, 4.25, { fill: c.col, transparency: 88, r: 0.16 });
       await iconCircle(s, c.x + 0.3, 2.72, 1.0, c.I, { bg: c.col, name: c.title });
       text(s, [b(c.title, { color: c.col, fontSize: 24, breakLine: true }), t(c.kr + "  ·  " + c.greek, { fontSize: 14, color: C.accent4 })], c.x + 1.5, 2.72, 4.3, 1.0, { valign: "middle" });
-      text(s, [b("Heat source: "), t(c.src)], c.x + 0.3, 3.9, w - 0.6, 0.75, { fontSize: 16 });
+      text(s, c.src, c.x + 0.3, 3.9, w - 0.6, 0.75, { fontSize: 16 });
       let ex = c.x + 0.55;
       for (const [name, I] of c.ex) {
         await iconCircle(s, ex, 4.75, 0.55, I, { bg: C.background1, fg: c.colHex, scale: 0.7, name });
@@ -524,10 +526,10 @@ SL.ectocycle = async () => {
 };
 
 SL.ectoreg = async () => {
-    const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Ectotherms Can Still Regulate Temperature", "행동(behavior) 혹은 매우 일정한 환경을 통해 체온을 안정적으로 유지");
+    const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Ectotherms Can Still Regulate Temperature", "외온동물도 행동으로, 또는 매우 일정한 환경 덕분에 체온을 안정적으로 유지한다");
     const img = await photo(PHOTO.iguana.f, 4.6, 3.95, { pos: "centre", px: 1000 });
     s.addImage({ data: img, x: 0.6, y: 1.95, w: 4.6, h: 3.95, altText: "Green iguana basking on a rock" });
-    text(s, [b("Basking in the sun", { color: C.text2 }), t(" — a behavioral mechanism (행동메커니즘), cf. Fig. 32-1c")], 0.6, 5.98, 4.6, 0.5, { fontSize: 13 });
+    text(s, [b("Basking in the sun", { color: C.text2 }), t(" — a behavioral mechanism", { breakLine: true }), t("햇볕 쬐기: 외온동물이 체온을 조절하는 행동 메커니즘", { color: C.accent4, fontSize: 12 })], 0.6, 5.98, 4.6, 0.5, { fontSize: 13 });
     credit(s, PHOTO.iguana.credit, 0.6, 6.5, 4.6);
     const rx = 5.55, rw = 7.18;
     // card A behaviour
@@ -552,12 +554,13 @@ SL.ectoreg = async () => {
 };
 
 SL.endocost = async () => {
-    const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Endotherms: Benefits and Costs", "내온동물 — 따뜻한 체온을 유지하는 데에는 이점과 비용 두 가지가 있다");
+    const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Endotherms: Benefits and Costs", "내온동물 — 따뜻한 체온을 유지하는 데 따르는 이점과 비용");
     card(s, 0.6, 1.95, 4.1, 4.8, { fill: C.text2, r: 0.16 });
-    text(s, "Most endotherms keep a fairly constant body temperature of about", 0.9, 2.2, 3.55, 1.0, { fontSize: 16, color: C.background1 });
-    text(s, "35–41°C", 0.9, 3.15, 3.55, 1.0, { fontSize: 48, bold: true, color: C.accent3, fontFace: "+mj-lt" });
-    text(s, "(95–106°F)", 0.9, 4.1, 3.55, 0.4, { fontSize: 15, color: C.accent5 });
-    text(s, [t("A few, such as ", { color: C.background1 }), b("hummingbirds", { color: C.accent5 }), t(", allow their body temperature to fall at night.", { color: C.background1 })], 0.9, 4.75, 3.55, 1.2, { fontSize: 15 });
+    // content block vertically centred in the dark card (1.95–6.75)
+    text(s, "Most endotherms keep a fairly constant body temperature of about", 0.9, 2.8, 3.55, 0.65, { fontSize: 16, color: C.background1 });
+    text(s, "35–41°C", 0.9, 3.45, 3.55, 0.95, { fontSize: 48, bold: true, color: C.accent3, fontFace: "+mj-lt", valign: "middle" });
+    text(s, "(95–106°F)", 0.9, 4.4, 3.55, 0.4, { fontSize: 15, color: C.accent5 });
+    text(s, [t("A few, such as ", { color: C.background1 }), b("hummingbirds", { color: C.accent5 }), t(", allow their body temperature to fall at night.", { color: C.background1 })], 0.9, 5.05, 3.55, 0.9, { fontSize: 15 });
     // balance scale
     const fx = 8.7;
     s.addShape(S.ISOSCELES_TRIANGLE, { x: fx - 0.45, y: 5.9, w: 0.9, h: 0.75, fill: { color: C.accent4 }, line: { type: "none" }, objectName: "fulcrum" });
@@ -601,8 +604,8 @@ SL.twotypes = async () => {
       else s.addShape(S.CUSTOM_GEOMETRY, { x: gx, y: gy, w: gw, h: gh, points: [{ x: 0, y: 1.0 }, { x: 5.0, y: 0.02, curve: { type: "cubic", x1: 2.8, y1: 1.0, x2: 4.4, y2: 0.75 } }], line: { color: C.accent1, width: 3 } });
       text(s, c.label, gx, gy - 0.32, 3.2, 0.28, { fontSize: 12, color: c.col, bold: true });
       text(s, "time →", gx + gw - 0.8, gy + gh + 0.02, 0.8, 0.25, { fontSize: 11, color: C.accent4, align: "right" });
+      text(s, "schematic graph (개념도)", gx, gy + gh + 0.02, 2.4, 0.25, { fontSize: 10, italic: true, color: C.accent4 });
     }
-    text(s, "Graphs are schematic (개념도).", 0.6, 6.82, 4, 0.2, { fontSize: 10, italic: true, color: C.accent4 });
     s.addNotes(NOTE("twotypes"));
 };
 
@@ -775,7 +778,7 @@ SL.posfb = async () => {
     card(s, 0.6, 1.95, 12.13, 0.9, { fill: C.accent1, transparency: 86, r: 0.16 });
     text(s, [b("Positive feedback", { color: C.accent1 }), t(" (양성피드백): a change produces a response that "), b("amplifies that change"), t(".")], 0.9, 1.95, 11.6, 0.9, { fontSize: 19, valign: "middle" });
     // haywire thermostat staircase
-    text(s, [b("Imagine a thermostat gone haywire", { color: C.text2, breakLine: true }), t("고장 난 온도조절기를 상상해 보라", { color: C.accent4, fontSize: 14 })], 0.6, 3.1, 6.2, 0.75, { fontSize: 17 });
+    text(s, [b("Imagine a thermostat gone haywire", { color: C.text2, breakLine: true }), t("고장 난 온도조절기를 떠올려 보자", { color: C.accent4, fontSize: 14 })], 0.6, 3.1, 6.2, 0.75, { fontSize: 17 });
     const steps = ["You nudge up the setting", "Room reaches the set point", "Instead of turning off: “more heat!”", "… and so on"];
     for (let i = 0; i < 4; i++) {
       const x = 0.6 + i * 1.55, h = 0.9 + i * 0.55, y = 6.7 - h;
@@ -786,7 +789,7 @@ SL.posfb = async () => {
     text(s, "a very uncomfortable situation", 2.3, 3.66, 3.35, 0.44, { fontSize: 13, italic: true, color: C.accent4, align: "right", valign: "middle" });
     // right: why rare
     card(s, 7.3, 3.1, 5.43, 3.6, { fill: C.text2, r: 0.16 });
-    text(s, [b("Why is it rare?", { color: C.accent3, fontSize: 20, breakLine: true }), t("왜 드문가?", { color: C.accent5, fontSize: 14 })], 7.6, 3.25, 4.9, 0.8, {});
+    text(s, [b("Why is it rare?", { color: C.accent3, fontSize: 20, breakLine: true }), t("왜 드물까?", { color: C.accent5, fontSize: 14 })], 7.6, 3.25, 4.9, 0.8, {});
     text(s, bl([
       [t("Its effects could "), b("spiral out of control", { color: C.accent3 }), t(" → relatively rare in biological systems.")],
       [t("Under normal physiological conditions, positive feedback events are "), b("eventually halted by negative feedback", { color: C.accent5 }), t(".")],
@@ -829,7 +832,7 @@ SL.arctic1 = async () => {
     text(s, [t("Climate scientists are convinced that global climate change has triggered positive feedback in the Arctic — the result may be the "), b("planetary equivalent of hyperthermia", { color: C.accent1 }), t(".")], x0, 1.95, w0, 1.05, { fontSize: 15 });
     text(s, [t("The North Pole (≈400 miles from the nearest land) was formerly covered with ice "), b("2–5 m"), t(" (6–15 ft) thick.")], x0, 3.0, w0, 0.7, { fontSize: 15 });
     const stats = [
-      { big: "2×", d: "Arctic warming vs. the global average", col: C.accent1 },
+      { big: "2×", d: "faster Arctic warming than the global average", col: C.accent1 },
       { big: "50%", d: "thinner ice cap in the past 30 years", col: C.accent2 },
       { big: "35%", d: "smaller in area in the past 30 years", col: C.accent2 },
       { big: "10%", d: "average shrinkage per decade (currently)", col: C.text2 },
@@ -844,7 +847,7 @@ SL.arctic1 = async () => {
 };
 
 SL.arctic2 = async () => {
-    const s = contentSlide("4. Positive Feedback", "EARTH WATCH", T_EARTH, "Ice Reflects, Water Absorbs", "얼음은 태양빛을 반사하고, 바닷물은 흡수한다 — 전통적인 양성피드백의 일례");
+    const s = contentSlide("4. Positive Feedback", "EARTH WATCH", T_EARTH, "Ice Reflects, Water Absorbs", "얼음은 햇빛을 반사하고, 바닷물은 흡수한다 — 전형적인 양성피드백");
     text(s, "Share of incoming sunlight reflected back into space:", 0.6, 1.92, 5.6, 0.4, { fontSize: 15, bold: true, color: C.text2 });
     const refl = [
       { name: "Snow cover on ice", kr: "얼음을 덮은 눈", val: "as much as 80%", frac: 0.8, col: C.accent5 },
@@ -867,8 +870,8 @@ SL.arctic2 = async () => {
     const cx = 9.45, cy = 4.2, rx = 2.0, ry = 1.5, nw = 2.4, nh = 0.92;
     const nodes = [
       { x: cx, y: cy - ry, en: "Arctic ice melts", kr: "북극의 얼음이 녹음", col: C.accent2 },
-      { x: cx + rx, y: cy, en: "More water exposed", kr: "더 많은 물이 노출", col: C.text2 },
-      { x: cx, y: cy + ry, en: "Water absorbs more sunlight", kr: "더 많은 태양빛 흡수", col: C.text2 },
+      { x: cx + rx, y: cy, en: "More water exposed", kr: "더 많은 물이 드러남", col: C.text2 },
+      { x: cx, y: cy + ry, en: "Water absorbs more sunlight", kr: "더 많은 햇빛을 흡수", col: C.text2 },
       { x: cx - rx, y: cy, en: "Water becomes warmer", kr: "물의 온도 상승", col: C.accent1 },
     ];
     for (const n of nodes) s.addText([b(n.en, { color: C.background1, breakLine: true }), t(n.kr, { color: C.background1, fontSize: 12 })], { shape: S.ROUNDED_RECTANGLE, x: n.x - nw / 2, y: n.y - nh / 2, w: nw, h: nh, rectRadius: 0.14, fill: { color: n.col }, line: { type: "none" }, fontSize: 14, align: "center", valign: "middle", margin: 0, isTextBox: true, objectName: "loop node: " + n.en });
@@ -887,7 +890,7 @@ SL.revisited = async () => {
     const s = contentSlide("Wrap-up", "CASE STUDY · REVISITED", T_CASE, "Case Study Revisited: Who Is at Risk?", "열사병은 운동선수만의 문제가 아니다");
     text(s, [t("When the air temperature becomes extremely high — especially with "), b("high humidity"), t(" — people can die of heat stroke while sitting in their living rooms.")], 0.6, 1.92, 12.13, 0.72, { fontSize: 16 });
     const grp = [
-      { I: md.MdElderly, en: "The elderly", kr: "노인", d: "during summer heat waves — far more likely than athletes", col: C.accent1 },
+      { I: md.MdElderly, en: "The elderly", kr: "노인", d: "far more likely than athletes to die of heat stroke, during summer heat waves", col: C.accent1 },
       { I: fa.FaChild, en: "Children", kr: "어린이", d: "temperature homeostasis not fully developed; produce more heat and sweat less than adults", col: C.accent1 },
       { I: md.MdAgriculture, en: "Farm workers", kr: "농업 노동자", d: "toiling under the hot sun — at considerable risk", col: C.accent3 },
     ];
@@ -907,7 +910,7 @@ SL.revisited = async () => {
     text(s, "outside (90°F)  →  inside in < 1 hour (140°F)", 7.5, 4.62, 5.0, 0.35, { fontSize: 13, color: C.background1, align: "center" });
     text(s, "About 35–40 U.S. children die each year when left alone in cars.", 7.5, 4.95, 5.0, 0.35, { fontSize: 13, color: C.accent3, align: "center", bold: true });
     card(s, 7.2, 5.5, 5.53, 1.25, { fill: C.accent3, transparency: 80 });
-    text(s, [b("Consider this: ", { color: C.text2 }), t("in the 2003 European heat wave, 35,000–52,000 “excess deaths” occurred. Should they count as a cost of inaction on CO₂ emissions?")], 7.4, 5.55, 5.15, 1.15, { fontSize: 13, valign: "middle" });
+    text(s, [b("Heat waves: ", { color: C.text2 }), t("climate models predict more intense and frequent heat waves. The 2003 European heat wave caused 35,000–52,000 “excess deaths.”")], 7.4, 5.55, 5.15, 1.15, { fontSize: 13, valign: "middle" });
     s.addNotes(NOTE("revisited"));
 };
 
@@ -915,7 +918,7 @@ SL.keyconcepts = async () => {
     const s = contentSlide("Wrap-up", null, null, "Key Concepts of 32.1", "핵심개념의 요약", "CONTENT_DARK");
     const kc = [
       { I: fa.FaBalanceScale, col: C.background1, h: "Homeostasis", kr: "항상성", d: "a dynamic equilibrium: internal conditions (temperature, salt, oxygen, glucose, pH, water) are kept within a range in which proteins can function and energy can be made available." },
-      { I: fa.FaThermometerHalf, col: C.accent3, h: "Ectotherms vs. endotherms", kr: "외온동물 vs. 내온동물", d: "Ectotherms get most body warmth from the environment; endotherms get most heat from metabolic activities and regulate body temperature within a narrow range." },
+      { I: fa.FaThermometerHalf, col: C.accent3, h: "Ectotherms vs. endotherms", kr: "외온·내온동물", d: "Ectotherms get most body warmth from the environment; endotherms get most heat from metabolic activities and regulate body temperature within a narrow range." },
       { I: fa.FaSyncAlt, col: C.accent5, h: "Negative feedback", kr: "음성피드백", d: "a change triggers a response that counteracts the change and restores the original conditions — the main way homeostasis is maintained." },
       { I: tb.TbArrowBigUpLines, col: C.accent1, h: "Positive feedback", kr: "양성피드백", d: "a change initiates events that intensify the change — rare, and self-limiting (자기 제한적), e.g., childbirth." },
     ];
@@ -927,60 +930,6 @@ SL.keyconcepts = async () => {
       text(s, kc[i].d, x + 0.3, y + 1.15, 5.4, 1.05, { fontSize: 14, color: C.background1 });
     }
     s.addNotes(NOTE("keyconcepts"));
-};
-
-SL.quiz = async () => {
-    const s = contentSlide("Wrap-up", "REVIEW", T_REV, "Quick Check", "개념을 통한 이해 — 선택형 문제와 빈칸 채우기 (교재 Chapter Review)");
-    const qs = [
-      { q: "1. Which of the following statements is FALSE?", o: ["a. Overheating to 108°F (42°C) is likely to disrupt covalent bonds in enzymes.", "b. Overly acidic conditions can disrupt protein structure.", "c. Low body temperature will reduce the rate at which enzymes catalyze reactions.", "d. Considerable metabolic activity is required to maintain a relatively constant environment."] },
-      { q: "2. Which of the following statements is TRUE?", o: ["a. Ectotherms generate most of their body heat metabolically.", "b. Ectotherms include birds and mammals.", "c. Ectotherms experience variable body temperatures.", "d. Ectotherms are known as “warm-blooded” animals."] },
-      { q: "3. Negative feedback systems do NOT …", o: ["a. include thermostats that maintain room temperature.", "b. include a sensor, a control center, and an effector.", "c. control body temperature.", "d. regulate uterine contractions during labor."] },
-    ];
-    const pos = [[0.6, 1.95, 6.0, 2.45], [6.73, 1.95, 6.0, 2.45], [0.6, 4.55, 6.0, 2.2]];
-    for (let i = 0; i < 3; i++) {
-      const [x, y, w, h] = pos[i];
-      card(s, x, y, w, h, { fill: C.background2 });
-      text(s, [b(qs[i].q, { color: C.text2, breakLine: true }), ...qs[i].o.map((o, j) => t(o, { breakLine: j < 3 }))], x + 0.25, y + 0.15, w - 0.45, h - 0.25, { fontSize: 13, paraSpaceAfter: 3 });
-    }
-    card(s, 6.73, 4.55, 6.0, 2.2, { fill: C.accent3, transparency: 80 });
-    text(s, [b("Fill in the blank", { color: C.text2, breakLine: true }), t("The ability of the body to maintain its internal conditions within the narrow range required by cells to function is called ________. The most important general mechanism for maintaining these conditions is ________.", { breakLine: true }), t("신체가 기능하도록 좁은 범위 내에서 내부 조건을 유지하는 능력을 ____이라 부르고, 이를 유지하는 가장 중요한 메커니즘은 ____이다.", { color: C.accent4, fontSize: 12 })], 6.98, 4.7, 5.55, 1.95, { fontSize: 13, paraSpaceAfter: 4 });
-    s.addNotes(NOTE("quiz"));
-};
-
-SL.answers = async () => {
-    const s = contentSlide("Wrap-up", "REVIEW", T_REV, "Quick Check: Answers", "정답과 해설 — 근거는 모두 교재 32.1 본문");
-    const ans = [
-      { n: "1", a: "a", why: [t("Heat disrupts the "), b("hydrogen bonds"), t(" that hold an enzyme’s 3-D shape — not covalent bonds. (b), (c), (d) are all true.")] },
-      { n: "2", a: "c", why: [t("Ectotherms get most heat from the environment, so their body temperatures vary with external temperature.")] },
-      { n: "3", a: "d", why: [t("Uterine contractions during labor are driven by "), b("positive feedback", { color: C.accent1 }), t(" (oxytocin), which is ended by negative feedback at birth.")] },
-      { n: "✎", a: "homeostasis · negative feedback", why: [t("항상성 · 음성피드백")] },
-    ];
-    for (let i = 0; i < 4; i++) {
-      const y = 1.95 + i * 1.2;
-      card(s, 0.6, y, 12.13, 1.05, { fill: i === 3 ? C.accent3 : C.background2, transparency: i === 3 ? 80 : undefined });
-      s.addText(ans[i].n, { shape: S.OVAL, x: 0.8, y: y + 0.2, w: 0.65, h: 0.65, fill: { color: C.text2 }, line: { type: "none" }, fontSize: 18, bold: true, color: C.background1, align: "center", valign: "middle", margin: 0, isTextBox: true });
-      text(s, ans[i].a, 1.65, y, i === 3 ? 4.6 : 1.0, 1.05, { fontSize: i === 3 ? 20 : 30, bold: true, color: C.accent6, valign: "middle", fontFace: "+mj-lt" });
-      text(s, ans[i].why, i === 3 ? 6.4 : 2.75, y, i === 3 ? 6.1 : 9.75, 1.05, { fontSize: 15, valign: "middle" });
-    }
-    s.addNotes(NOTE("answers"));
-};
-
-SL.discuss = async () => {
-    const s = contentSlide("Wrap-up", null, null, "Let’s Discuss", "생각해 볼 문제 — 교재의 Think Critically · Applying the Concepts · Consider This", "CONTENT_DARK");
-    const qs = [
-      { I: fa.FaBrain, col: C.background1, h: "Think Critically (Fig. 32-2)", q: "What would happen if a cold, shivering mammal ingested a poison that destroyed all of its body’s nerve endings that detect heat?", kr: "열을 감지하는 신경말단이 모두 파괴된다면?" },
-      { I: fa.FaWater, col: C.accent5, h: "Applying the Concepts 1", q: "Why does life on land present particular difficulties in maintaining temperature homeostasis compared to life in water?", kr: "육지의 삶이 수중보다 체온 항상성 유지가 어려운 이유는?" },
-      { I: fa.FaBaby, col: C.accent1, h: "Applying the Concepts 3", q: "Design a machine with sensors, electrical currents, and motors that illustrates the feedback relationships in labor and childbirth.", kr: "진통과 출산의 피드백을 장비에 비유해 설계한다면?" },
-      { I: fa.FaGlobeAmericas, col: C.accent3, h: "Consider This (Earth Watch)", q: "By pumping CO₂ and other greenhouse gases into the atmosphere, we are inadvertently experimenting with the life-support systems of our planet. What do you think will eventually stop this cycle?", kr: "무엇이 결국 이 사이클을 멈추게 할까?" },
-    ];
-    for (let i = 0; i < 4; i++) {
-      const x = 0.6 + (i % 2) * 6.17, y = 1.98 + Math.floor(i / 2) * 2.45;
-      card(s, x, y, 5.96, 2.25, { fill: C.background1, transparency: 92, r: 0.16 });
-      await iconCircle(s, x + 0.3, y + 0.28, 0.7, qs[i].I, { bg: qs[i].col, fg: HEX.navy, name: qs[i].h });
-      text(s, qs[i].h, x + 1.2, y + 0.28, 4.6, 0.7, { fontSize: 17, bold: true, color: qs[i].col, valign: "middle" });
-      text(s, [t(qs[i].q, { color: C.background1, breakLine: true }), t(qs[i].kr, { color: C.accent5, fontSize: 13 })], x + 0.3, y + 1.05, 5.4, 1.15, { fontSize: 14 });
-    }
-    s.addNotes(NOTE("discuss"));
 };
 
 SL.refs = async () => {
@@ -1217,11 +1166,11 @@ SL.refsShort = async () => {
 // ================================================================ variants
 // "§Name" starts a section; every other entry is a slide id from SL.
 const VARIANTS = {
-  full: ["§Opening", "title", "case", "roadmap", "§1. What & Why", "constancy", "what", "dynamic", "enzymes", "case2",
+  main: ["§Opening", "title", "case", "roadmap", "§1. What & Why", "constancy", "what", "dynamic", "enzymes", "case2",
     "§2. Body Temperature", "warmcold", "ectoendo", "ectocycle", "ectoreg", "endocost",
     "§3. Negative Feedback", "twotypes", "negfb", "fig322", "hypo", "water",
     "§4. Positive Feedback", "vicious", "posfb", "birth", "arctic1", "arctic2",
-    "§Wrap-up", "revisited", "keyconcepts", "quiz", "answers", "discuss", "refs"],
+    "§Wrap-up", "revisited", "keyconcepts", "refs"],
   short: ["§Opening", "title", "caseShort", "§1. What & Why", "whatShort", "enzymes",
     "§2. Body Temperature", "ectoendoShort", "tempregShort",
     "§3. Negative Feedback", "negfbShort", "fig322", "hypo",
@@ -1296,6 +1245,11 @@ const ENZ_BROKEN = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300
       if (!/eaLnBrk=/.test(ppr)) ppr = ppr.replace(/^<a:pPr/, '<a:pPr eaLnBrk="0"');
       return "<a:p>" + ppr + rest + "</a:p>";
     });
+    // Keep a Korean gloss on the same line as the word before it ("enzyme (효소)"): the space before
+    // "(" + Hangul becomes a no-break space, both inside one run and across a run boundary.
+    const HANGUL_PAREN = /\((?=[가-힣])/.source;
+    sx = sx.replace(/(<a:t(?:\s[^>]*)?>)([^<]*)(<\/a:t>)/g, (m, open, body, close) => open + body.replace(new RegExp(" " + HANGUL_PAREN, "g"), " (") + close);
+    sx = sx.replace(new RegExp(" (</a:t></a:r><a:r>(?:(?!</a:r>)[\\s\\S])*?<a:t(?:\\s[^>]*)?>)" + HANGUL_PAREN, "g"), " $1(");
     zip.file(name, sx);
   }
   console.log("paragraphs repaired:", fixedParas);
@@ -1303,12 +1257,12 @@ const ENZ_BROKEN = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300
   console.log("wrote", OUT);
 
   // Export the short version's read-aloud script as a Markdown file next to the deck.
-  if (VARIANT === "short") {
+  {
     const syllables = (str) => (str.match(/[가-힣]/g) || []).length + Math.ceil((str.match(/[A-Za-z]/g) || []).length / 3) + (str.match(/[0-9]/g) || []).length;
     const total = OUTLINE.reduce((n, o) => n + syllables(NOTE(o.id)), 0);
     const minutes = Math.round(total / 300); // ~300 syllables per minute of presenting
     const md = [
-      "# 32.1 항상성 — 발표 대본 (짧은 버전)",
+      `# 32.1 항상성 — 발표 대본${VARIANT === "short" ? " (짧은 버전)" : ""}`,
       "",
       `슬라이드 ${OUTLINE.length}장 · 그대로 읽으면 약 ${minutes}분. PowerPoint 슬라이드 노트에도 같은 대본이 들어 있습니다.`,
       "",
