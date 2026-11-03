@@ -12,7 +12,17 @@ const gi = require("react-icons/gi");
 const md = require("react-icons/md");
 const tb = require("react-icons/tb");
 
-const OUT = path.resolve(process.argv[2] || path.join(__dirname, "..", "32.1_Homeostasis.pptx"));
+// Usage: node build.js <full|short> [out.pptx]
+const VARIANT = process.argv[2] || "short";
+if (!["full", "short"].includes(VARIANT)) throw new Error(`unknown variant "${VARIANT}" (use full or short)`);
+const OUT = path.resolve(process.argv[3] || path.join(__dirname, "..", `32.1_Homeostasis_${VARIANT}.pptx`));
+const NOTES = require(`./notes_${VARIANT}.js`);
+function NOTE(id) {
+  if (!NOTES[id]) throw new Error(`no ${VARIANT} speaker notes for slide "${id}"`);
+  return NOTES[id];
+}
+let CURRENT_SECTION = null; // set from the variant's slide list
+const OUTLINE = []; // [{ id, title, kr }] for the script export
 
 const HEX = { ink: "1D2733", navy: "12304A", light: "EEF3F6", coral: "E2553B", teal: "167D8C", amber: "F2A541", slate: "5C6B7A", ice: "8ED1DC", green: "3E8E5E", white: "FFFFFF" };
 const THEME = {
@@ -176,8 +186,9 @@ function credit(s, str, x, y, w, { col = C.accent4, align = "left" } = {}) {
   text(s, str, x, y, w, 0.24, { fontSize: 10, color: col, italic: true, align, objectName: "image credit" });
 }
 
-function contentSlide(section, tagLabel, tagOpts, title, kr, master = "CONTENT") {
-  const s = pres.addSlide({ masterName: master, sectionTitle: section });
+function contentSlide(_section, tagLabel, tagOpts, title, kr, master = "CONTENT") {
+  const s = pres.addSlide({ masterName: master, sectionTitle: CURRENT_SECTION });
+  OUTLINE.push({ title, kr });
   if (tagLabel) tag(s, tagLabel, tagOpts);
   s.addText(title, { placeholder: "title" });
   s.addText(kr, { placeholder: "kr" });
@@ -223,11 +234,11 @@ const T_EARTH = { col: C.accent6, txt: C.background1 };
 const T_REV = { col: C.accent4, txt: C.background1 };
 
 // ================================================================ slides
-async function build() {
-  // ---------- 1. Title
-  pres.addSection({ title: "Opening" });
-  {
-    const s = pres.addSlide({ masterName: "TITLE_DARK", sectionTitle: "Opening" });
+const SL = {};
+
+SL.title = async () => {
+    const s = pres.addSlide({ masterName: "TITLE_DARK", sectionTitle: CURRENT_SECTION });
+    OUTLINE.push({ title: "Homeostasis: Why and How Do Animals Regulate Their Internal Environment?", kr: "항상성: 동물은 왜 그리고 어떻게 자신의 내부 환경을 조절하는가?" });
     text(s, "GENERAL BIOLOGY  ·  CHAPTER 32", 0.75, 1.55, 7, 0.35, { fontSize: 14, bold: true, color: C.accent3, charSpacing: 2 });
     text(s, "32.1", 0.75, 1.0, 3, 0.6, { fontSize: 30, bold: true, color: C.accent1 });
     s.addText("Homeostasis: Why and How Do Animals Regulate Their Internal Environment?", { placeholder: "title" });
@@ -242,14 +253,10 @@ async function build() {
     text(s, "cold", cx - 1.1, cy + D / 2 + 0.2, 0.8, 0.4, { fontSize: 14, color: C.accent5, valign: "middle" });
     await ic(s, fa.FaFire, HEX.coral, cx + 0.55, cy + D / 2 + 0.2, 0.4, "hot");
     text(s, "hot", cx + 1.0, cy + D / 2 + 0.2, 0.8, 0.4, { fontSize: 14, color: C.accent1, valign: "middle" });
-    s.addNotes(`[발표 시작 · 약 1분]
-안녕하세요. 저희 조는 32장 1절 "항상성: 동물은 왜 그리고 어떻게 자신의 내부 환경을 조절하는가?"를 발표하겠습니다.
-오른쪽 그림처럼 차가운 쪽(파란색)과 뜨거운 쪽(빨간색) 사이에서 '설정점(set point)'을 유지하는 것이 오늘의 핵심 주제입니다.
-발표는 열사병 사례로 시작해서, (1) 항상성의 정의와 이유, (2) 외온동물과 내온동물, (3) 음성피드백, (4) 양성피드백 순서로 진행하고 마지막에 복습 문제를 함께 풀어 보겠습니다.`);
-  }
+    s.addNotes(NOTE("title"));
+};
 
-  // ---------- 2. Case study
-  {
+SL.case = async () => {
     const s = contentSlide("Opening", "CASE STUDY", T_CASE, "Case Study: Overheated", "과도한 열 — 열사병(heat stroke)으로 쓰러진 대학 운동선수들");
     card(s, 0.6, 1.95, 4.75, 4.7, { fill: C.accent3, transparency: 82, r: 0.16 });
     await ic(s, fa.FaQuoteLeft, HEX.amber, 0.9, 2.2, 0.55, "quote");
@@ -269,15 +276,10 @@ async function build() {
       text(s, [b(r.who, { breakLine: true, color: C.text2 }), t(r.what, { fontSize: 14 })], 7.95, y + 0.17, 4.6, 1.15, { fontSize: 16, valign: "middle" });
       y += 1.64;
     }
-    s.addNotes(`[Case Study · 약 1분 30초]
-교재 32장은 '과도한 열(Overheated)'이라는 사례로 시작합니다.
-스탠퍼드 철인 3종 선수이자 의대생인 Kierann Smith는 2011년 대학생 철인 3종 경기에서 "32℃의 온도와 90%의 습도도 나를 막을 수 없다"고 생각한 직후 쓰러졌고, 체온이 41.1℃까지 올랐습니다. 얼음물과 얼음팩으로 체온을 40℃ 아래로 떨어뜨렸고, 그녀는 살아남았습니다.
-하지만 레슬링 선수 Ben Richards는 2013년 5마일 달리기 훈련 중 쓰러져 병원 도착 당시 체온이 41.6℃였고 10일 후 사망했습니다. 2014년 축구선수 Marquese Meadow도 연습 후 방향 감각을 잃고 사망했는데, 검사 결과 열사병으로 확인되었습니다.
-(교재 원문은 화씨: 106°F, 107°F, 104°F)`);
-  }
+    s.addNotes(NOTE("case"));
+};
 
-  // ---------- 3. Roadmap
-  {
+SL.roadmap = async () => {
     const s = contentSlide("Opening", "OVERVIEW", T_REV, "Today’s Roadmap", "오늘 다룰 내용 — 교재의 Check Your Learning 4가지 질문");
     const items = [
       { n: "1", en: "What is homeostasis — and why do organisms maintain it?", kr: "항상성의 정의와 유지 이유", I: fa.FaBalanceScale, col: C.text2 },
@@ -297,15 +299,10 @@ async function build() {
     card(s, 0.6, 6.12, 12.13, 0.62, { fill: C.accent3, transparency: 80, r: 0.31 });
     await ic(s, fa.FaRunning, HEX.ink, 0.88, 6.2, 0.46, "athlete");
     text(s, [b("Running thread: "), t("the heat-stroke case (열사병 사례) — what keeps body temperature constant, and what goes wrong.")], 1.5, 6.12, 11.0, 0.62, { fontSize: 15, valign: "middle" });
-    s.addNotes(`[목차 · 약 1분]
-오늘 발표는 교재 32.1절 끝의 "Check Your Learning" 네 가지 질문에 답할 수 있도록 구성했습니다.
-1) 항상성을 정의하고 유기체가 항상성을 유지하는 이유, 2) 냉혈(외온)동물과 온혈(내온)동물의 차이와 예, 3) 항상성 유지에 음성피드백이 중요한 이유, 4) 양성피드백의 정의와 그것이 생명체에서 드문 이유입니다.
-그리고 열사병 사례가 발표 전체에 걸쳐 계속 등장합니다.`);
-  }
+    s.addNotes(NOTE("roadmap"));
+};
 
-  // ---------- 4. Internal constancy
-  pres.addSection({ title: "1. What & Why" });
-  {
+SL.constancy = async () => {
     const s = contentSlide("1. What & Why", "PART 1 · WHAT & WHY", T_PART, "From Internal Constancy to Homeostasis", "‘내부 불변성’에서 ‘항상성’으로");
     // left: two observations
     card(s, 0.6, 1.95, 6.25, 2.25, { fill: C.background2 });
@@ -323,14 +320,10 @@ async function build() {
     text(s, [b("Claude Bernard", { breakLine: true, color: C.text2 }), t("French physiologist, mid-19th century", { fontSize: 13, color: C.accent4, breakLine: true }), t("described the “internal constancy” ", { fontSize: 14 }), t("(내부 불변성)", { fontSize: 14, color: C.accent4 })], px[0], 4.82, pw + 0.05, 1.5, { fontSize: 16 });
     text(s, [b("Walter Cannon", { breakLine: true, color: C.text2 }), t("1920s", { fontSize: 13, color: C.accent4, breakLine: true }), t("coined the term ", { fontSize: 14 }), b("homeostasis", { fontSize: 14, color: C.accent2 }), t(" (항상성)", { fontSize: 14, color: C.accent4 })], px[1], 4.82, pw + 0.05, 1.5, { fontSize: 16 });
     credit(s, "Portraits: Bernard — public domain; Cannon — Bachrach 1934, CC BY 4.0 (Wikimedia Commons)", 7.25, 6.45, 5.5);
-    s.addNotes(`[약 1분 30초]
-여러분이 방에 앉아 있든, 정글에서 더위에 고생하든, 눈보라 속에서 떨고 있든 심장·뇌·근육 같은 신체 대부분의 세포는 거의 일정한 온도를 유지합니다.
-또 사막에 있든 수영장, 바다, Great Salt Lake에서 수영을 하든 세포들은 거의 일정한 조성을 가진 '세포간질액(interstitial fluid)'에 잠겨 있습니다.
-이런 동물체의 '내부 불변성'은 19세기 중반 프랑스 생리학자 Claude Bernard가 처음 기술했고, 1920년대에 Walter Cannon이 '항상성(homeostasis)'이라는 용어를 만들었습니다.`);
-  }
+    s.addNotes(NOTE("constancy"));
+};
 
-  // ---------- 5. What is homeostasis
-  {
+SL.what = async () => {
     const s = contentSlide("1. What & Why", "PART 1 · WHAT & WHY", T_PART, "What Is Homeostasis?", "항상성이란 무엇인가?");
     card(s, 0.6, 1.95, 12.13, 1.75, { fill: C.text2, r: 0.16 });
     text(s, [b("Homeostasis ", { color: C.accent5 }), t("(항상성)", { color: C.accent5 }), t(" — the ability of an organism to maintain its internal environment within the narrow limits that allow optimal cell functioning.", { color: C.background1 })], 0.95, 2.1, 11.4, 0.95, { fontSize: 21, valign: "middle" });
@@ -352,13 +345,10 @@ async function build() {
       text(s, it.en, x + 0.1, 5.55, w - 0.2, 0.62, { fontSize: 15, bold: true, align: "center", valign: "middle" });
       text(s, it.kr, x + 0.1, 6.17, w - 0.2, 0.45, { fontSize: 13, color: C.accent4, align: "center", valign: "top" });
     }
-    s.addNotes(`[약 1분 30초]
-Cannon은 항상성을 "유기체가 세포의 적절한 기능을 위해 필요한 조건의 범위 속에서 내부 환경을 유지하려는 능력"이라고 설명했습니다.
-항상성 메커니즘은 체온과 체액의 물·염 농도를 유지하는 것 외에도 포도당 농도, pH(산-염기의 균형), 호르몬 분비, 산소와 이산화탄소의 농도 등 체내의 다른 환경을 조절합니다.`);
-  }
+    s.addNotes(NOTE("what"));
+};
 
-  // ---------- 6. Dynamic, not static
-  {
+SL.dynamic = async () => {
     const s = contentSlide("1. What & Why", "PART 1 · WHAT & WHY", T_PART, "Homeostasis Is Dynamic, Not Static", "‘동일하게 유지하려는 것’이지만, 내부 환경은 끊임없이 조절된다");
     // left concept
     card(s, 0.6, 1.95, 3.9, 4.75, { fill: C.background2, r: 0.16 });
@@ -395,15 +385,10 @@ Cannon은 항상성을 "유기체가 세포의 적절한 기능을 위해 필요
     arrow(s, 9.65, 3.15, 9.95, 3.15, { col: C.accent2 });
     arrow(s, 9.65, 5.25, 9.95, 5.25, { col: C.accent2 });
     text(s, "Interacting systems throughout the body help maintain homeostasis.", 6.85, 6.42, 5.9, 0.35, { fontSize: 13, italic: true, color: C.accent4 });
-    s.addNotes(`[약 1분 30초]
-'항상성'이라는 단어는 "동일하게 유지하려는 것"을 의미해서 정적인 불변의 상태처럼 들리지만, 실제 내부 환경은 변화하는 내부·외부 조건에 맞서 일관성을 유지하기 위해 끊임없이 조절되고 있습니다. 교재 요약에서는 이를 '동적인 평형상태(dynamic equilibrium)'라고 표현합니다.
-예를 들어 운동은 항상성 메커니즘에 도전합니다. 일하는 근육의 에너지 요구를 유지하려면 더 많은 산소가 공급되어야 하고, 근육이 만든 여분의 열은 사라져야 합니다.
-그래서 몸은 호흡수, 땀샘 활동, 피부로의 혈류를 증가시킵니다. 이 단원 전체에서 몸 전체의 상호작용 시스템들이 항상성 유지를 돕는 예를 계속 보게 됩니다.
-※ 한국어판은 이 문장을 "호흡수, 땀샘 활동, 그리고 피부로의 혈류 증가에 따라 몸의 온도는 상승한다"로 옮겼지만, 영어 원문 "The body rises to the occasion"은 '몸이 (그 요구에) 대응한다'는 뜻입니다. 땀샘 활동과 피부 혈류 증가는 오히려 열을 내보내는 반응이므로 원문 의미로 설명하세요.`);
-  }
+    s.addNotes(NOTE("dynamic"));
+};
 
-  // ---------- 7. Enzymes
-  {
+SL.enzymes = async () => {
     const s = contentSlide("1. What & Why", "PART 1 · WHAT & WHY", T_PART, "Homeostasis Allows Enzymes to Function", "항상성은 효소가 기능하도록 한다 — 세포가 주변 환경에 민감한 이유");
     // Left: structure
     card(s, 0.6, 1.95, 6.35, 4.0, { fill: C.background2, r: 0.16 });
@@ -436,15 +421,10 @@ Cannon은 항상성을 "유기체가 세포의 적절한 기능을 위해 필요
     const ccx = cx + 0.1;
     card(s, ccx, 6.2, 12.73 - ccx, 0.42, { fill: C.text2, r: 0.21 });
     text(s, [t("→ need a narrow range of ", { color: C.background1 }), b("salt, pH, temperature", { color: C.accent3 })], ccx + 0.1, 6.2, 12.73 - ccx - 0.2, 0.42, { fontSize: 13, valign: "middle", align: "center" });
-    s.addNotes(`[약 2분]
-왜 세포는 주변 환경에 이렇게 민감할까요? 생명체가 항상성을 유지하는 큰 이유는 단백질, 특히 효소 때문입니다.
-① 구조: 세포 내 거의 모든 생화학 반응은 특정 효소에 의해 촉매되고, 효소의 활성은 정확한 3차 구조에 의존합니다. 이 구조는 부분적으로 수소결합으로 유지되는데(2장, 3장), 수소결합은 중요하지만 취약해서 너무 짜거나(극염), 너무 산성이거나, 너무 염기성이거나, 너무 뜨거운 환경에서 파괴될 수 있습니다. 그래서 염 농도, pH, 온도가 좁은 범위 안에 있어야 합니다.
-② 속도: 온도는 또 다른 이유로도 중요합니다. 효소가 반응을 촉매하는 속도는 온도에 따라 달라집니다. 저온은 분자 운동을 느리게 해서 효소와 그 대상 분자 간 상호작용의 수와 속도를 감소시키고, 온도가 올라가면 반응이 빨라지며 때로는 해로운 수준에 이르기도 합니다.
-(왼쪽 효소 그림은 이해를 돕기 위한 개념도입니다.)`);
-  }
+    s.addNotes(NOTE("enzymes"));
+};
 
-  // ---------- 8. Case continued: organ damage
-  {
+SL.case2 = async () => {
     const s = contentSlide("1. What & Why", "CASE STUDY · CONTINUED", T_CASE, "Case Study: Why Didn’t They Recover?", "과도한 열 — 체온은 몇 시간 만에 정상이 되었는데, 왜 회복하지 못했을까?");
     text(s, [t("Meadow and Richards were treated in hospital for over a week, and their body temperatures were brought down to normal "), b("within a few hours"), t(". Yet both died.")], 0.6, 1.92, 12.13, 0.7, { fontSize: 16 });
     // flow
@@ -472,16 +452,10 @@ Cannon은 항상성을 "유기체가 세포의 적절한 기능을 위해 필요
     // bottom question
     card(s, 0.6, 6.08, 12.13, 0.68, { fill: C.text2, r: 0.34 });
     text(s, [t("Human metabolism functions only within a narrow range of temperatures. ", { color: C.background1 }), b("Is this true for all animals?", { color: C.accent3 }), t("  → Part 2", { color: C.accent5 })], 0.9, 6.08, 11.6, 0.68, { fontSize: 16, valign: "middle" });
-    s.addNotes(`[Case Study Continued · 약 1분 30초]
-축구선수 Marquese Meadow와 레슬링선수 Ben Richards는 사망 전 일주일 넘게 병원에서 치료를 받았고, 체온은 열사병 후 몇 시간 내에 정상으로 내려갔습니다. 그런데 왜 회복하지 못했을까요?
-열사병에 따른 신진대사의 이상(metabolic chaos)이 생명에 중요한 기관, 특히 간과 신장을 손상시키기 때문입니다. 근육세포들이 파괴되면서 물질들이 혈액으로 방출되어 신부전을 일으킬 수 있고, 상승한 체온은 혈액의 독소물질을 제거하는 데 중요한 간도 손상시킵니다.
-Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 때 큰 타격을 받았다"고 했습니다.
-인체의 대사과정은 좁은 온도 범위 내에서만 기능합니다. 그렇다면 모든 동물에게도 해당될까요? → 다음 파트로 넘어갑니다.`);
-  }
+    s.addNotes(NOTE("case2"));
+};
 
-  // ---------- 9. Warm or cold blooded
-  pres.addSection({ title: "2. Body Temperature" });
-  {
+SL.warmcold = async () => {
     const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "“Warm-Blooded” or “Cold-Blooded”?", "온혈 혹은 냉혈? — 이 용어들은 종종 오해의 소지가 있다");
     text(s, [t("Mammals and birds are often called "), b("“warm-blooded”", { color: C.accent1 }), t(" (온혈); other reptiles, amphibians, fish, and invertebrates "), b("“cold-blooded”", { color: C.accent2 }), t(" (냉혈). But these terms are often "), b("misleading"), t(":")], 0.6, 1.92, 12.13, 0.75, { fontSize: 16 });
     const cards = [
@@ -499,16 +473,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       text(s, c.desc, c.x + 0.25, 5.6, w - 0.5, 1.0, { fontSize: 15 });
       credit(s, c.p.credit, c.x, 6.74, w);
     }
-    s.addNotes(`[약 1분 30초]
-동물들 사이에서 가장 많이 연구된 항상성 메커니즘은 아마도 체온 조절일 것입니다.
-흔히 포유류와 조류를 '온혈(warm-blooded)', 파충류·양서류·어류·무척추동물을 '냉혈(cold-blooded)'이라고 하지만 이 용어들은 종종 오해의 소지가 있습니다.
-예를 들어 한여름 태양이 사막 pupfish가 사는 샘과 작은 연못을 뜨겁게 만들면 pupfish의 체온은 37.8℃를 넘어서, 때로는 완전한 '온혈'동물이 됩니다(그림 32-1a).
-반대로 벌새는 먹이를 찾아다니는 낮 동안에는 체온이 40.5℃까지 올라가지만 밤에는 13℃까지 내려갑니다(그림 32-1b).
-(사진의 벌새는 교재의 루비목벌새와 다른 종인 cinnamon hummingbird입니다.)`);
-  }
+    s.addNotes(NOTE("warmcold"));
+};
 
-  // ---------- 10. Ectotherms vs Endotherms
-  {
+SL.ectoendo = async () => {
     const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Ectotherms vs. Endotherms", "외온동물 vs. 내온동물 — 체온 유지를 위한 주요 열원(熱源)으로 분류");
     text(s, "To avoid confusion, scientists classify animals by their major source of body warmth.", 0.6, 1.92, 12.13, 0.4, { fontSize: 16, color: C.text1 });
     const cols = [
@@ -529,14 +497,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       }
       text(s, c.note, c.x + 0.3, 5.95, w - 0.6, 0.75, { fontSize: 14, italic: true, color: C.text1 });
     }
-    s.addNotes(`[약 1분 30초]
-이러한 혼란을 피하기 위해 과학자들은 체온 유지를 위한 주요 열원을 토대로 동물들을 분류합니다.
-외온동물(ectotherms, 그리스어로 '외부열')은 환경으로부터 대부분의 열을 얻습니다. 파충류(조류는 제외)와 양서류, 그리고 대부분의 어류와 무척추동물이 외온동물입니다. 가장 단순한 예로 굴 속의 지렁이나 개울 속의 물고기는 체온이 주변 환경의 온도와 같아집니다.
-내온동물(endotherms, '내부열')은 대사반응을 통하여 대부분의 열을 생산합니다. 조류와 포유류가 가장 대표적인 내온동물이지만, 몇몇 다른 동물들도 때때로 대사작용을 통해 상당한 열을 생산하기도 합니다.`);
-  }
+    s.addNotes(NOTE("ectoendo"));
+};
 
-  // ---------- 11. Ectotherms warm up / cool down
-  {
+SL.ectocycle = async () => {
     const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Ectotherms: Cooling Down, Warming Up", "외온동물의 체온은 시간·일·주 단위의 외부 기온 변화에 따라 크게 달라진다");
     text(s, [t("Many ectotherms — "), b("butterflies, bees, and most lizards"), t(" — cool down and become inactive at night, "), b("conserving energy", { color: C.accent2 }), t(", then warm up and become active during the day.")], 0.6, 1.92, 12.13, 0.75, { fontSize: 16 });
     const st = [
@@ -556,15 +520,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     await ic(s, gi.GiButterfly, HEX.slate, 3.62, 3.15, 0.5, "butterfly");
     await ic(s, gi.GiBee, HEX.slate, 7.8, 3.15, 0.5, "bee");
     await ic(s, gi.GiGecko, HEX.slate, 12.0, 3.15, 0.5, "lizard");
-    s.addNotes(`[약 1분 30초]
-대부분의 외온동물의 체온은 시간이나 일간, 주간에 따른 외부 기온 변화에 따라 상당히 다양합니다.
-나비, 벌, 그리고 대부분의 도마뱀과 같은 많은 외온동물들은 밤에는 체온을 낮추고 비활성 상태가 되어 에너지를 보존하지만, 낮 동안에는 체온을 높이며 활동합니다.
-밤에 나비와 벌은 체온이 너무 낮아져 날지 못하고, 도마뱀도 종종 너무 느려 먹이를 사냥하지 못하거나 포식자로부터 도망치지 못합니다.
-새벽에 벌은 스스로 몸을 떨고 나비는 날갯짓을 하면서 대사열을 만들어 내는 반면, 도마뱀은 따뜻하게 햇볕에 데워진 바위를 찾습니다.`);
-  }
+    s.addNotes(NOTE("ectocycle"));
+};
 
-  // ---------- 12. Ectotherms can regulate
-  {
+SL.ectoreg = async () => {
     const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Ectotherms Can Still Regulate Temperature", "행동(behavior) 혹은 매우 일정한 환경을 통해 체온을 안정적으로 유지");
     const img = await photo(PHOTO.iguana.f, 4.6, 3.95, { pos: "centre", px: 1000 });
     s.addImage({ data: img, x: 0.6, y: 1.95, w: 4.6, h: 3.95, altText: "Green iguana basking on a rock" });
@@ -589,16 +548,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     card(s, rx, 5.35, rw, 1.4, { fill: C.background2 });
     await iconCircle(s, rx + 0.25, 5.65, 0.8, md.MdWaves, { bg: C.text2, name: "deep sea" });
     text(s, [b("Very constant environment  ", { color: C.text2 }), ko("매우 일정한 환경", { fontSize: 14, breakLine: true }), t("In the deep ocean the temperature stays at about "), b("0–3°C"), t(" (32–37.5°F), so ectothermic deep-sea fish experience little variation in body temperature throughout their lives.")], rx + 1.25, 5.4, rw - 1.45, 1.3, { fontSize: 15, valign: "middle" });
-    s.addNotes(`[약 1분 30초]
-가변 체온이 외온동물에서 일반적이지만, 행동을 통해서 혹은 매우 일정하게 유지되는 환경 내에서 몇몇 냉혈동물은 꽤 안정적으로 체온을 유지할 수 있습니다.
-예를 들어 곤충과 도마뱀은 종종 햇볕을 쬐며 몸을 데우고(그림 32-1c의 이구아나), 그늘로 이동하여 몸을 식힙니다.
-앞서 언급한 pupfish는 2.2~45℃ 범위의 수온에서 견딜 수 있지만 좁은 온도 범위 내에서만 번식할 수 있습니다. 그래서 번식기에 pupfish는 수온 변화에 따라 수영장(연못)의 서로 다른 지역을 수영함으로써 매우 정확하게 체온을 조절합니다.
-심해의 경우 온도가 상당히 일정(0~3℃)하므로 대부분의 냉혈 심해어류는 일생 동안 체온 변화를 거의 겪지 않습니다.
-(막대의 빨간 '번식 범위'는 위치를 나타낸 개념도이며, 교재에 구체적 수치는 없습니다.)`);
-  }
+    s.addNotes(NOTE("ectoreg"));
+};
 
-  // ---------- 13. Endotherms benefits/costs
-  {
+SL.endocost = async () => {
     const s = contentSlide("2. Body Temperature", "PART 2 · BODY TEMPERATURE", T_PART, "Endotherms: Benefits and Costs", "내온동물 — 따뜻한 체온을 유지하는 데에는 이점과 비용 두 가지가 있다");
     card(s, 0.6, 1.95, 4.1, 4.8, { fill: C.text2, r: 0.16 });
     text(s, "Most endotherms keep a fairly constant body temperature of about", 0.9, 2.2, 3.55, 1.0, { fontSize: 16, color: C.background1 });
@@ -623,16 +576,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     text(s, [t("the "), b("energy"), t(" required to maintain a high body temperature")], 9.8, 4.55, 2.75, 1.05, { fontSize: 16 });
     arrow(s, 7.2, 5.72, 7.2, 5.9, { col: C.accent4, w: 2, head: null });
     arrow(s, 11.14, 5.72, 11.14, 5.9, { col: C.accent4, w: 2, head: null });
-    s.addNotes(`[약 1분 30초]
-벌새와 같은 몇몇 내온동물들은 야간에 체온이 내려가기는 하지만, 대부분은 약 35℃부터 41℃ 사이의 상당히 일정한 체온을 유지합니다.
-체온을 따뜻하게 유지하는 데에는 이점과 비용 두 가지가 있습니다. 주요한 이점으로는 따뜻한 몸이 일반적으로 환경을 더 잘 감지하고, 더 빨리 반응하며, 추운 몸보다 더 빨리 움직일 수 있다는 것입니다.
-물론 주요한 비용은 높은 체온을 유지하기 위해 요구되는 에너지입니다.
-그러면 동물들은 어떻게 체내의 상태를 인지하고 필요에 따라 조절할까요? 그들의 내부 환경은 '피드백 시스템'이라는 메커니즘에 의해 유지됩니다. → 다음 파트`);
-  }
+    s.addNotes(NOTE("endocost"));
+};
 
-  // ---------- 14. Two types of feedback
-  pres.addSection({ title: "3. Negative Feedback" });
-  {
+SL.twotypes = async () => {
     const s = contentSlide("3. Negative Feedback", "PART 3 · NEGATIVE FEEDBACK", T_PART, "Two Types of Feedback Systems", "피드백 시스템은 내부 조건을 조절한다");
     text(s, [t("How does an animal sense the conditions within its body and adjust them when necessary? Its internal environment is maintained by "), b("feedback systems", { color: C.text2 }), t(" (피드백 시스템).")], 0.6, 1.92, 12.13, 0.75, { fontSize: 16 });
     const cs = [
@@ -656,15 +603,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       text(s, "time →", gx + gw - 0.8, gy + gh + 0.02, 0.8, 0.25, { fontSize: 11, color: C.accent4, align: "right" });
     }
     text(s, "Graphs are schematic (개념도).", 0.6, 6.82, 4, 0.2, { fontSize: 10, italic: true, color: C.accent4 });
-    s.addNotes(`[약 1분 30초]
-피드백 시스템에는 두 가지 형태가 존재합니다.
-하나는 음성피드백 시스템으로, 내부 환경에 있어 변화의 효과에 반대로 작용하는 것이고 이는 주로 항상성을 유지하는 데 이용됩니다. 왼쪽 그래프처럼 값이 설정점에서 벗어나면 반대 방향의 반응이 일어나 다시 설정점으로 돌아옵니다.
-다른 하나는 양성피드백 시스템으로, 변화가 스스로를 증폭시키는 사이클을 만듭니다. 오른쪽처럼 변화가 점점 커집니다.
-(그래프는 개념을 보여주기 위한 개념도입니다.)`);
-  }
+    s.addNotes(NOTE("twotypes"));
+};
 
-  // ---------- 15. Negative feedback reverses change + A&P Fig 1.10
-  {
+SL.negfb = async () => {
     const s = contentSlide("3. Negative Feedback", "PART 3 · NEGATIVE FEEDBACK", T_PART, "Negative Feedback Reverses Change", "음성피드백은 변화의 효과를 역전시킨다 — 항상성을 조절하는 가장 중요한 메커니즘");
     text(s, [b("Negative feedback", { color: C.accent2 }), t(" (음성피드백): a change causes responses that "), b("counteract the change"), t(" → the system returns to its original condition.")], 0.6, 1.95, 6.4, 1.05, { fontSize: 17 });
     text(s, "Found in living and nonliving systems:", 0.6, 3.05, 6.4, 0.35, { fontSize: 15, bold: true, color: C.text2 });
@@ -689,15 +631,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     s.addImage({ data: f.data, x: 7.2 + (5.53 - fw) / 2, y: 2.05, w: fw, h: fh, altText: "OpenStax A&P Figure 1.10: negative feedback loop and body temperature regulation" });
     text(s, "(a) 음성피드백 고리 · (b) 체온 조절 — 체온이 37°C를 넘을 때", 7.35, 2.1 + fh, 5.3, 0.3, { fontSize: 12, color: C.accent4, align: "center" });
     credit(s, FIG.ap110.credit, 7.35, 2.42 + fh, 5.3, { align: "center" });
-    s.addNotes(`[약 2분]
-항상성을 조절하는 가장 중요한 메커니즘은 음성피드백이며, 변화에 대한 반응을 역방향으로 전환하는 것입니다. 음성피드백의 전체적인 결과는 그 반응계를 역전시켜 초기의 조건 상태로 되돌아오게 하는 것입니다.
-음성피드백은 생물계와 무생물계 모두가 가지는 공통적 특성입니다. 체온, 혈액 내의 혈당량과 호르몬·물·염분·산소의 수준, 똑바로 서 있기와 같은 거의 모든 생리적 측면을 조절합니다. 집안의 온도 유지, 변기 탱크 채우기, 크루즈 컨트롤에도 음성피드백이 적용됩니다.
-모든 음성피드백 시스템은 3가지 주요 구성요소, 즉 감지기(sensor), 조절 센터(control center), 효과기(effector)를 포함합니다. 감지기는 현재의 조건을 확인하고, 조절 센터는 '설정점(set point)'이라는 원하는 상태와 현재 상태를 비교하며, 효과기는 원하는 상태로 되돌리는 출력을 만듭니다.
-오른쪽 그림(OpenStax)은 (a) 일반적인 고리와 (b) 체온이 37℃를 넘었을 때 땀샘이 작동해 열 손실을 늘리는 예입니다.`);
-  }
+    s.addNotes(NOTE("negfb"));
+};
 
-  // ---------- 16. Fig 32-2 diagram (house vs body)
-  {
+SL.fig322 = async () => {
     const s = contentSlide("3. Negative Feedback", "PART 3 · NEGATIVE FEEDBACK", T_PART, "Negative Feedback in Action (Fig. 32-2)", "음성피드백은 항상성을 유지한다 — 집의 온도와 체온 조절");
     const Lx = 1.55, Lw = 3.05, Cx = 5.0, Cw = 3.35, Rx = 8.75, Rw = 3.98;
     const mid = Cx + Cw / 2;
@@ -748,15 +685,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     const by = 6.36, lx = 0.95, cy = 2.73;
     polyline(s, [[mid, 5.52 + rh], [mid, by], [lx, by], [lx, cy], [Cx + 0.22, cy]], { col: C.accent2, w: 2.75 });
     text(s, [b("Effector changes the conditions to match set point", { color: C.accent2 }), t("  효과기는 설정점을 맞추기 위해 조건을 변경", { color: C.accent4 })], 1.15, by + 0.06, 8.6, 0.34, { fontSize: 12, valign: "middle" });
-    s.addNotes(`[핵심 그림 · 약 2분 30초]
-교재 그림 32-2를 재구성한 도식입니다. 가운데가 음성피드백의 단계이고, 왼쪽은 집, 오른쪽은 우리 몸의 예입니다.
-매우 추운 날 집의 온도를 조절하는 음성피드백 시스템에서 감지기는 온도측정기(온도계), 조절 센터는 온도조절기, 효과기는 열발생기(난방 장치)입니다. 온도계는 방의 온도를 감지하고 그 정보를 온도조절기로 보내며, 여기서 실제 온도는 원하는 설정 온도와 비교됩니다. 방의 온도가 설정 온도보다 낮으면 온도조절기는 열발생기로 신호를 보내 열을 발생시키고, 방이 따뜻해져 설정 온도로 돌아오면 열발생기의 작동을 멈추게 합니다.
-몸에서는 피부의 온도 수용체가 감지기, 시상하부가 설정점을 가진 조절 센터, 근육이 효과기로서 떨림을 통해 열을 냅니다. 그리고 바뀐 조건이 다시 감지되는 '고리(loop)'가 만들어집니다.
-[교재 비판적 사고 질문] 추위에 떨고 있는 포유류가 열을 감지하는 신경말단을 파괴하는 독을 섭취했다면 어떤 현상이 일어날까? → 마지막 토론 슬라이드에서 다시 다룹니다.`);
-  }
+    s.addNotes(NOTE("fig322"));
+};
 
-  // ---------- 17. Hypothalamus + Bio2e 33.23
-  {
+SL.hypo = async () => {
     const s = contentSlide("3. Negative Feedback", "PART 3 · NEGATIVE FEEDBACK", T_PART, "Hypothalamus: The Body’s Thermostat", "시상하부의 체온 조절 — 체온이 설정점(정상 체온)보다 낮을 때와 높을 때");
     text(s, [b("Hypothalamus", { color: C.text2 }), t(" (시상하부) — a region deep in the brain; the key homeostatic regulator in vertebrates. In birds and mammals it coordinates "), b("nervous signals, hormone release, and behaviors"), t(". Nerve endings in the skin and elsewhere act as temperature sensors.")], 0.6, 1.88, 12.13, 0.82, { fontSize: 15 });
     const cw = 3.62;
@@ -784,16 +716,11 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     credit(s, FIG.bio3323.credit, fx - 0.1, 6.1, fw + 0.2, { align: "center" });
     card(s, 0.6, 6.52, 12.13, 0.38, { fill: C.text2, r: 0.19 });
     text(s, [t("When normal body temperature is restored, the sensors signal the hypothalamus → it ", { color: C.background1 }), b("switches off", { color: C.accent3 }), t(" those actions (negative feedback).", { color: C.background1 })], 0.85, 6.52, 11.7, 0.38, { fontSize: 13, valign: "middle" });
-    s.addNotes(`[약 2분]
-척추동물에서 중요한 항상성 조절자는 뇌의 깊숙한 부위인 시상하부(hypothalamus)에 위치하고 있습니다. 조류와 포유동물에서 시상하부는 신경신호, 호르몬 방출 및 환경에 따른 온도의 큰 변동에도 불구하고 체온을 유지하려는 행동을 조정합니다. 피부와 신체 다른 부위의 신경말단은 온도감지기 역할을 하며 이 정보를 시상하부로 전달합니다.
-만약 체온이 설정점(정상 체온) 아래로 떨어지면, 시상하부는 몸을 떨거나(작고 빠른 근 수축) 따뜻한 곳으로 이동함으로써 열을 생성하거나 보존하려는 메커니즘을 활성화합니다. 신체의 중요하지 않은 부위(얼굴, 손, 발, 피부)의 혈관은 수축되어 열손실을 감소시키고 신체 중심부(뇌, 심장, 내부 기관)로 따뜻한 혈액을 보냅니다. 정상 체온으로 돌아오면 온도감지기는 시상하부로 신호를 보내 이 활동들을 멈추게 합니다.
-체온이 설정점보다 올라가면 시상하부는 더 많은 혈액을 피부로 보내 열이 주변 공기로 방출되게 합니다. 땀샘은 물이 피부에서 증발함에 따라 몸을 시원하게 하는 분비물을 만들고, 피로와 불편함은 사람들이 휴식을 취하고 그늘이나 냉수를 찾도록 합니다.
-가운데 그림은 OpenStax 교재의 그림으로 같은 과정을 보여 줍니다.`);
-  }
+    s.addNotes(NOTE("hypo"));
+};
 
-  // ---------- 18. Have you ever wondered: water
-  {
-    const s = contentSlide("3. Negative Feedback", "HAVE YOU EVER WONDERED …", T_WOND, "Can You Drink Too Much Water?", "과량의 물을 마실 수 있는가? — 간단히 답하자면 “그렇다”");
+SL.water = async () => {
+    const s = contentSlide("3. Negative Feedback", "HAVE YOU EVER WONDERED …", T_WOND, "Can You Drink Too Much Water?", "물도 너무 많이 마시면 해로울까?");
     card(s, 0.6, 1.95, 4.0, 4.8, { fill: C.accent2, r: 0.16 });
     await ic(s, fa.FaTint, HEX.white, 1.0, 2.25, 0.8, "water drop");
     text(s, "13%", 1.0, 3.15, 3.3, 1.1, { fontSize: 66, bold: true, color: C.background1, fontFace: "+mj-lt" });
@@ -804,17 +731,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     chip(s, 4.95, 4.68, "hyponatremia", "저나트륨혈증 — “too little sodium”", { col: C.accent1, size: 15, h: 0.44 });
     text(s, [t("Excess water dilutes the sodium ions (Na⁺, 나트륨이온) in the blood. Na⁺ is essential for "), b("neuronal signaling and muscle contraction"), t(", so elaborate homeostatic mechanisms keep it within a very narrow range.")], 4.95, 5.25, 7.78, 0.9, { fontSize: 15 });
     text(s, [b("Symptoms: ", { color: C.accent1 }), t("nausea and vomiting, muscle cramps, convulsions, unconsciousness, coma, occasionally death")], 4.95, 6.2, 7.78, 0.55, { fontSize: 14 });
-    s.addNotes(`[Have You Ever Wondered · 약 1분 30초]
-"과량의 물을 마실 수 있을까?" 간단히 답하자면 '그렇다'입니다. 대부분의 것들이 그렇듯 물이라 할지라도 과하면 해로울 수 있습니다.
-수화(Hydration)는 사람들이 필요 이상으로 많이 마시게 부추기는 유행어가 되었고, 열사병을 걱정하는 일부 코치들은 과한 수분 섭취를 요구하기도 합니다.
-조지아주 17살 고등학교 축구선수 Zyrees Oliver는 연습 중 근육 경련을 풀려고 물 2갤런과 게토레이 2갤런을 마셨고, 집에 돌아온 후 쓰러져 사망했습니다. 원인은 '너무 적은 나트륨'을 뜻하는 저나트륨혈증(hyponatremia)으로, 과량의 수분 섭취로 혈액 내 나트륨이온(Na+)이 희석된 것입니다.
-보스턴 마라톤 결승선에서 테스트한 사람들 중 13%는 가벼운 저나트륨혈증을 보였고 일부는 위험할 정도로 낮았습니다.
-나트륨이온은 신경 신호전달과 근육 수축에 필수적이기 때문에, 체액의 나트륨이온을 매우 정교한 범위 내에서 조절하는 항상성 메커니즘이 진화했습니다.`);
-  }
+    s.addNotes(NOTE("water"));
+};
 
-  // ---------- 19. Case: when feedback fails (vicious cycle)
-  pres.addSection({ title: "4. Positive Feedback" });
-  {
+SL.vicious = async () => {
     const s = contentSlide("4. Positive Feedback", "CASE STUDY · CONTINUED", T_CASE, "Case Study: When Feedback Fails", "열사병 — 음성피드백 메커니즘이 제대로 작동하지 않는다");
     // left: broken negative feedback
     card(s, 0.6, 1.95, 5.2, 4.8, { fill: C.background2, r: 0.16 });
@@ -847,16 +767,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     text(s, [b("vicious cycle", { color: C.accent1, breakLine: true }), t("악순환", { color: C.accent4, fontSize: 13, breakLine: true }), t("= positive feedback", { fontSize: 13, italic: true })], cx - 1.0, cy - 0.45, 2.0, 0.9, { fontSize: 16, align: "center", valign: "middle" });
     card(s, 6.2, 6.3, 6.53, 0.46, { fill: C.text2, r: 0.23 });
     text(s, [t("Not terminated by ", { color: C.background1 }), b("immediate cooling", { color: C.accent5 }), t(" → may lead to death", { color: C.background1 })], 6.3, 6.3, 6.33, 0.46, { fontSize: 14, align: "center", valign: "middle" });
-    s.addNotes(`[Case Study Continued · 약 1분 30초]
-열사병에 걸리면 체온을 상대적으로 일정하게 유지시키는 음성피드백 메커니즘이 제대로 작동하지 않습니다.
-과열로 인한 피드백의 한 가지 형태는 피로감이며, 피로감은 일반적으로 사람을 쉬게 합니다. 그러나 열사병의 증상인 정신적 혼란은 이 음성피드백을 파괴하고 운동선수가 신체의 경고 신호를 쉽게 무시하도록 합니다.
-또 열사병 환자는 급격한 체온 상승으로 인한 뇌의 온도 조절 시스템 오작동으로 땀 흘리는 것이 멈출 수 있습니다.
-효소 활성도는 온도에 따라 증가하므로 대사율이 상승하여 더 많은 열을 발생시키고, 체온은 더 치솟습니다. 즉각적인 냉각으로 이를 막지 않으면 이 악순환—양성피드백의 일례—은 사망으로 이어질 수 있습니다.
-그렇다면 양성피드백이란 무엇일까요? 항상 해로울까요? 얼마나 자주 자연적으로 일어날까요?`);
-  }
+    s.addNotes(NOTE("vicious"));
+};
 
-  // ---------- 20. Positive feedback amplifies change
-  {
+SL.posfb = async () => {
     const s = contentSlide("4. Positive Feedback", "PART 4 · POSITIVE FEEDBACK", T_PART, "Positive Feedback Amplifies Change", "양성피드백은 변화의 효과를 촉진시킨다");
     card(s, 0.6, 1.95, 12.13, 0.9, { fill: C.accent1, transparency: 86, r: 0.16 });
     text(s, [b("Positive feedback", { color: C.accent1 }), t(" (양성피드백): a change produces a response that "), b("amplifies that change"), t(".")], 0.9, 1.95, 11.6, 0.9, { fontSize: 19, valign: "middle" });
@@ -878,15 +792,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       [t("Under normal physiological conditions, positive feedback events are "), b("eventually halted by negative feedback", { color: C.accent5 }), t(".")],
       [t("It also occurs in nonliving systems (→ Earth Watch).")],
     ], { gap: 8, indent: 14 }), 7.6, 4.1, 4.9, 2.5, { fontSize: 15, color: C.background1 });
-    s.addNotes(`[약 1분 30초]
-양성피드백(positive feedback)에서는 하나의 변화가 그 변화를 증폭시키는 결과를 초래합니다.
-온도조절기가 고장 났다고 상상해 보세요. 온도 설정을 올렸는데, 방이 설정 온도에 도달해도 조절기가 꺼지는 대신 더 많은 열을 요구하고, 또 요구하고… 매우 불편한 상황이 됩니다.
-그 효과가 통제 불능으로 될 수 있기 때문에, 양성피드백은 생물학적 시스템에서는 상대적으로 드물며, 정상적인 생리 조건하에서 양성피드백은 음성피드백에 의해 결국 중단됩니다.
-양성피드백은 무생물계에서도 일어날 수 있습니다(뒤의 Earth Watch).`);
-  }
+    s.addNotes(NOTE("posfb"));
+};
 
-  // ---------- 21. Childbirth + A&P Fig 1.11
-  {
+SL.birth = async () => {
     const s = contentSlide("4. Positive Feedback", "PART 4 · POSITIVE FEEDBACK", T_PART, "Childbirth: A Positive Feedback Loop", "출산 — 사람과 다른 포유류에서 양성피드백의 대표적인 사례");
     const f = await figure(FIG.ap111.f);
     const fh = 4.45, fw = fh * f.ar;
@@ -907,16 +816,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     card(s, x0, 5.45, w0, 1.3, { fill: C.accent2, transparency: 86 });
     text(s, [b("How it ends: ", { color: C.accent2 }), t("the contractions cause the "), b("birth of the baby"), t(", relieving pressure on the cervix — "), b("negative feedback", { color: C.accent2 }), t(" ends the cycle.")], x0 + 0.2, 5.5, w0 - 0.35, 0.72, { fontSize: 14, valign: "middle" });
     text(s, [b("Also: let-down reflex", { color: C.text2 }), t(" (하강반사) — milk release during breastfeeding; stops when the full baby stops suckling.")], x0 + 0.2, 6.2, w0 - 0.35, 0.5, { fontSize: 12, color: C.text1, valign: "middle" });
-    s.addNotes(`[약 2분]
-대표적인 사례가 사람과 다른 포유류에서의 출산입니다.
-출산 초기의 수축은 태아의 머리를 자궁의 아래쪽에 위치한 자궁경부로 밀면서 자궁경부를 팽창시켜 열기 시작합니다. 자궁경부의 신경세포들은 스트레칭에 반응해 시상하부로 신호를 보내고, 시상하부는 호르몬 옥시토신의 방출을 시작합니다. 옥시토신은 더 강한 자궁수축을 촉진하여 태아의 머리가 자궁경부를 더 확장하게 하며, 더 많은 옥시토신의 방출을 촉진합니다.
-자궁수축이 태아의 출산을 유도하면 자궁경부의 압력이 완화되므로 음성피드백이 이 양성피드백 주기를 종결합니다.
-양성피드백의 또 다른 예는 모유 수유 기간 동안 우유를 방출하는 하강반사(let-down reflex)이며, 여기에도 옥시토신과 시상하부가 관여합니다(38장). 아기가 배가 불러 젖빨기를 멈추면(음성피드백) 이 사이클은 멈춥니다.
-※ 왼쪽 OpenStax 그림에는 '뇌하수체(pituitary gland)가 옥시토신을 분비'한다고 되어 있습니다. 우리 교재는 '시상하부가 옥시토신 방출을 일으킨다'고 서술하는데, 시상하부의 신호를 받아 뇌하수체가 혈액으로 내보낸다고 이해하면 됩니다(호르몬은 38장).`);
-  }
+    s.addNotes(NOTE("birth"));
+};
 
-  // ---------- 22. Earth Watch facts + photo
-  {
+SL.arctic1 = async () => {
     const s = contentSlide("4. Positive Feedback", "EARTH WATCH", T_EARTH, "Positive Feedback in the Arctic", "북극의 양성피드백 — 줄어드는 북극의 얼음");
     const img = await photo(PHOTO.bear.f, 5.6, 4.35, { pos: "centre", px: 1200 });
     s.addImage({ data: img, x: 0.6, y: 1.95, w: 5.6, h: 4.35, altText: "Polar bear on Arctic drift ice" });
@@ -937,15 +840,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       text(s, stats[i].big, x + 0.15, y + 0.1, 1.35, 1.15, { fontSize: 36, bold: true, color: stats[i].col, fontFace: "+mj-lt", valign: "middle", align: "center" });
       text(s, stats[i].d, x + 1.55, y + 0.1, 1.4, 1.15, { fontSize: 13, valign: "middle" });
     }
-    s.addNotes(`[Earth Watch · 약 1분 30초]
-양성피드백에서 변화하는 조건들은 그 변화를 더 증가시키는 반응들을 일으킵니다. 기상학자들은 세계의 기후 변화가 북극의 양성피드백을 촉발시키고, 이러한 결과가 지구 고열화(행성 규모의 고체온증)를 일으킬 수 있다고 확신합니다.
-북극은 가장 가까운 대륙으로부터 약 400마일 정도 떨어져 있고, 이전에는 2에서 5미터 두께의 얼음으로 덮여 있었습니다. 그러나 지구의 온도가 올라가면서 북극은 지구 평균보다 두 배나 빠르게 온도가 상승하고 있습니다.
-그 결과 지난 30년 동안 북극의 만년설은 거의 50% 더 얇아지고 면적은 35% 줄어들었으며(그림 E32-1), 현재 10년마다 평균 약 10%씩 줄어들고 있습니다.
-북극곰들은 북극의 얼음에 의존하여 사냥과 휴식을 취합니다.`);
-  }
+    s.addNotes(NOTE("arctic1"));
+};
 
-  // ---------- 23. Ice-albedo loop
-  {
+SL.arctic2 = async () => {
     const s = contentSlide("4. Positive Feedback", "EARTH WATCH", T_EARTH, "Ice Reflects, Water Absorbs", "얼음은 태양빛을 반사하고, 바닷물은 흡수한다 — 전통적인 양성피드백의 일례");
     text(s, "Share of incoming sunlight reflected back into space:", 0.6, 1.92, 5.6, 0.4, { fontSize: 15, bold: true, color: C.text2 });
     const refl = [
@@ -982,16 +880,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     await ic(s, fa.FaSun, HEX.amber, cx - 0.33, cy - 0.62, 0.66, "sun");
     text(s, [b("positive", { color: C.accent1, breakLine: true }), b("feedback", { color: C.accent1 })], cx - 0.9, cy + 0.07, 1.8, 0.6, { fontSize: 14, align: "center" });
     text(s, "“… and so on — a classic example of positive feedback, with unpredictable global consequences.”", 6.25, 6.32, 6.48, 0.45, { fontSize: 13, italic: true, color: C.accent4, align: "center" });
-    s.addNotes(`[Earth Watch · 약 2분]
-여기에서 양성피드백은 어떻게 작용할까요? 해답은 노출된 바닷물과 비교하였을 때 얼마나 많은 태양빛이 얼음에 의해 반사되는지에 있습니다.
-해빙은 일반적으로 50%에서 70%의 태양빛을 반사해 우주로 돌려보내고, 얼음을 뒤덮은 눈은 태양빛의 80% 정도를 반사합니다. 반면 바닷물은 단지 5%에서 10%의 빛만을 반사하므로 거의 대부분의 태양 에너지가 흡수되어 북극의 물을 데웁니다.
-북극의 얼음층이 녹으면서 더 많은 물이 노출되고, 노출된 물은 얼음에 비해 더 많은 태양빛을 흡수해 온도가 더 상승하고, 더 많은 얼음이 녹고, 또 다시 더 많은 물이 노출되고… 이것이 예측할 수 없는 전 지구적 결과를 가져오는 전통적인 양성피드백의 일례입니다.
-[교재 생각해 보기 / Consider This] 이산화탄소와 다른 온실 가스들을 대기로 뿜어내면서 우리는 의도하지 않은 지구의 생명유지 시스템을 실험하고 있다. 무엇이 결국 이 사이클을 멈추게 할까? → 토론 슬라이드에서 다시 다룹니다.`);
-  }
+    s.addNotes(NOTE("arctic2"));
+};
 
-  // ---------- 24. Case revisited
-  pres.addSection({ title: "Wrap-up" });
-  {
+SL.revisited = async () => {
     const s = contentSlide("Wrap-up", "CASE STUDY · REVISITED", T_CASE, "Case Study Revisited: Who Is at Risk?", "열사병은 운동선수만의 문제가 아니다");
     text(s, [t("When the air temperature becomes extremely high — especially with "), b("high humidity"), t(" — people can die of heat stroke while sitting in their living rooms.")], 0.6, 1.92, 12.13, 0.72, { fontSize: 16 });
     const grp = [
@@ -1016,14 +908,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     text(s, "About 35–40 U.S. children die each year when left alone in cars.", 7.5, 4.95, 5.0, 0.35, { fontSize: 13, color: C.accent3, align: "center", bold: true });
     card(s, 7.2, 5.5, 5.53, 1.25, { fill: C.accent3, transparency: 80 });
     text(s, [b("Consider this: ", { color: C.text2 }), t("in the 2003 European heat wave, 35,000–52,000 “excess deaths” occurred. Should they count as a cost of inaction on CO₂ emissions?")], 7.4, 5.55, 5.15, 1.15, { fontSize: 13, valign: "middle" });
-    s.addNotes(`[Case Study Revisited · 약 1분 30초]
-열사병은 운동선수만의 문제가 아닙니다. 기온이 극도로 높고 특히 습도까지 높으면, 사람들은 거실에 앉아 있다가도 열사병으로 사망할 수 있습니다. 운동선수가 뉴스에 더 많이 나오지만, 열사병 사망은 여름 폭염 중의 노인과 어린이에게서 훨씬 더 많이 일어나고, 뜨거운 태양 아래서 일하는 농업 노동자도 상당한 위험에 처해 있습니다.
-어린이는 특히 취약합니다. 아주 어린 아이들은 체온 항상성이 완전히 발달하지 않았고, 같은 조건에서 어른보다 열을 더 많이 내며, 땀은 덜 흘립니다. 미국에서는 매년 약 35~40명의 어린이가 차 안에 혼자 남겨져 열사병으로 사망합니다. 바깥이 32℃(90℉)를 넘으면 닫힌 차 안은 1시간도 안 되어 60℃(140℉)까지 치솟습니다. 어떤 볼일도 이 위험을 정당화할 수 없습니다.
-[Consider This] 2003년 유럽 폭염 때 35,000~52,000명의 '초과 사망'이 있었습니다. 이산화탄소 감축 비용을 계산할 때 이런 초과 사망을 '행동하지 않은 비용'에 포함해야 할까요?`);
-  }
+    s.addNotes(NOTE("revisited"));
+};
 
-  // ---------- 25. Key concepts (dark)
-  {
+SL.keyconcepts = async () => {
     const s = contentSlide("Wrap-up", null, null, "Key Concepts of 32.1", "핵심개념의 요약", "CONTENT_DARK");
     const kc = [
       { I: fa.FaBalanceScale, col: C.background1, h: "Homeostasis", kr: "항상성", d: "a dynamic equilibrium: internal conditions (temperature, salt, oxygen, glucose, pH, water) are kept within a range in which proteins can function and energy can be made available." },
@@ -1038,15 +926,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       text(s, [b(kc[i].h, { color: kc[i].col, fontSize: 19 }), t("  " + kc[i].kr, { color: C.accent5, fontSize: 14 })], x + 1.3, y + 0.3, 4.5, 0.8, { valign: "middle" });
       text(s, kc[i].d, x + 0.3, y + 1.15, 5.4, 1.05, { fontSize: 14, color: C.background1 });
     }
-    s.addNotes(`[요약 · 약 1분 30초]
-교재의 '핵심개념의 요약'입니다.
-항상성은 동물체 내부 상태(온도, 염, 산소, 당, pH, 수분의 정도 포함)의 동적인 평형상태를 말하며, 단백질이 기능할 수 있고 에너지가 이용될 수 있는 범위 내에서 유지됩니다.
-동물들은 서로 다른 온도 조절방식을 가지고 있습니다. 외온동물은 환경으로부터 대부분의 신체 따뜻함을 얻고, 내온동물은 대사 활동으로부터 열의 대부분을 얻으며 좁은 범위 내에서 체온을 조절하는 경향이 있습니다.
-항상성 상태는 어떤 변화가 그 변화에 대한 반대 반응을 촉진시킴으로써 원래의 상태로 돌아가도록 하는 음성피드백을 통해서 유지됩니다. 양성피드백은 변화가 변화를 강하게 하지만, 이러한 상황들은 모두 자기 제한적입니다.`);
-  }
+    s.addNotes(NOTE("keyconcepts"));
+};
 
-  // ---------- 26. Quick check
-  {
+SL.quiz = async () => {
     const s = contentSlide("Wrap-up", "REVIEW", T_REV, "Quick Check", "개념을 통한 이해 — 선택형 문제와 빈칸 채우기 (교재 Chapter Review)");
     const qs = [
       { q: "1. Which of the following statements is FALSE?", o: ["a. Overheating to 108°F (42°C) is likely to disrupt covalent bonds in enzymes.", "b. Overly acidic conditions can disrupt protein structure.", "c. Low body temperature will reduce the rate at which enzymes catalyze reactions.", "d. Considerable metabolic activity is required to maintain a relatively constant environment."] },
@@ -1061,14 +944,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
     }
     card(s, 6.73, 4.55, 6.0, 2.2, { fill: C.accent3, transparency: 80 });
     text(s, [b("Fill in the blank", { color: C.text2, breakLine: true }), t("The ability of the body to maintain its internal conditions within the narrow range required by cells to function is called ________. The most important general mechanism for maintaining these conditions is ________.", { breakLine: true }), t("신체가 기능하도록 좁은 범위 내에서 내부 조건을 유지하는 능력을 ____이라 부르고, 이를 유지하는 가장 중요한 메커니즘은 ____이다.", { color: C.accent4, fontSize: 12 })], 6.98, 4.7, 5.55, 1.95, { fontSize: 13, paraSpaceAfter: 4 });
-    s.addNotes(`[복습 퀴즈 · 약 2분]
-교재 Chapter Review의 선택형 문제 1~3번과 빈칸 채우기 1번입니다. 청중에게 잠깐 시간을 주고 손을 들어 답하게 하면 좋습니다.
-(한국어판 1번 a 보기는 '42℃로 과열하면 효소의 공유결합은 파괴될 수 있다'입니다.)
-정답은 다음 슬라이드에 있습니다.`);
-  }
+    s.addNotes(NOTE("quiz"));
+};
 
-  // ---------- 27. Answers
-  {
+SL.answers = async () => {
     const s = contentSlide("Wrap-up", "REVIEW", T_REV, "Quick Check: Answers", "정답과 해설 — 근거는 모두 교재 32.1 본문");
     const ans = [
       { n: "1", a: "a", why: [t("Heat disrupts the "), b("hydrogen bonds"), t(" that hold an enzyme’s 3-D shape — not covalent bonds. (b), (c), (d) are all true.")] },
@@ -1083,16 +962,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       text(s, ans[i].a, 1.65, y, i === 3 ? 4.6 : 1.0, 1.05, { fontSize: i === 3 ? 20 : 30, bold: true, color: C.accent6, valign: "middle", fontFace: "+mj-lt" });
       text(s, ans[i].why, i === 3 ? 6.4 : 2.75, y, i === 3 ? 6.1 : 9.75, 1.05, { fontSize: 15, valign: "middle" });
     }
-    s.addNotes(`[정답 · 약 1분]
-1번 정답 a: 과열로 파괴되는 것은 효소의 3차 구조를 유지하는 수소결합이지 공유결합이 아닙니다. b(과도한 산성은 단백질 구조 파괴), c(저체온은 효소 반응 속도 감소), d(일정한 환경 유지에는 상당한 대사 활동 필요)는 모두 맞는 설명입니다.
-2번 정답 c: 외온동물은 환경으로부터 열을 얻으므로 체온이 외부 기온에 따라 변합니다. a·b·d는 내온동물에 대한 설명이거나 틀린 용어입니다.
-3번 정답 d: 분만 시 자궁 수축은 옥시토신에 의한 양성피드백이며, 출산 후 음성피드백으로 종결됩니다.
-빈칸: 항상성(homeostasis), 음성피드백(negative feedback).
-(정답과 해설은 교재 32.1 본문 내용을 근거로 정리한 것입니다. 발표 전에 교재 뒤 Answers 부분과 한 번 대조해 확인하세요.)`);
-  }
+    s.addNotes(NOTE("answers"));
+};
 
-  // ---------- 28. Discussion (dark)
-  {
+SL.discuss = async () => {
     const s = contentSlide("Wrap-up", null, null, "Let’s Discuss", "생각해 볼 문제 — 교재의 Think Critically · Applying the Concepts · Consider This", "CONTENT_DARK");
     const qs = [
       { I: fa.FaBrain, col: C.background1, h: "Think Critically (Fig. 32-2)", q: "What would happen if a cold, shivering mammal ingested a poison that destroyed all of its body’s nerve endings that detect heat?", kr: "열을 감지하는 신경말단이 모두 파괴된다면?" },
@@ -1107,16 +980,10 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       text(s, qs[i].h, x + 1.2, y + 0.28, 4.6, 0.7, { fontSize: 17, bold: true, color: qs[i].col, valign: "middle" });
       text(s, [t(qs[i].q, { color: C.background1, breakLine: true }), t(qs[i].kr, { color: C.accent5, fontSize: 13 })], x + 0.3, y + 1.05, 5.4, 1.15, { fontSize: 14 });
     }
-    s.addNotes(`[토론 · 시간이 남으면 약 3~5분]
-청중과 함께 생각해 볼 질문들입니다. 아래는 교재 내용을 바탕으로 한 '예시 답안 방향'이니 발표 전에 조원들과 다듬으세요.
-① 비판적 사고(그림 32-2): 감지기(열을 감지하는 신경말단)가 사라지면 체온이 회복되어도 그 정보가 시상하부로 전달되지 않습니다. 그러면 조절 센터가 설정점과 비교할 수 없어 음성피드백 고리가 끊어지고, 떨림 같은 열 생산 반응을 적절히 멈추지 못할 수 있습니다.
-② 개념의 적용 1: 교재 예시처럼 심해는 0~3℃로 거의 일정해 심해어는 일생 동안 체온 변화를 거의 겪지 않습니다. 반면 육지의 공기 온도는 시간·일·계절에 따라 크게 변하므로(사막의 낮과 밤 등) 체온을 일정하게 유지하기가 더 어렵습니다.
-③ 개념의 적용 3: 감지기 = 자궁경부의 신장 감지 센서, 전류 = 시상하부로 가는 신경 신호, 모터 = 옥시토신에 의해 더 강해지는 자궁 근육 수축 → 출산(압력 해소)이라는 '정지 스위치'가 음성피드백 역할.
-④ Consider This: 정답이 정해진 질문은 아닙니다. 예: 얼음이 모두 녹아 더 이상 반사면이 없어질 때, 혹은 온실가스 배출 감소 같은 인간의 개입 등 의견을 나눠 봅니다.`);
-  }
+    s.addNotes(NOTE("discuss"));
+};
 
-  // ---------- 29. References
-  {
+SL.refs = async () => {
     const s = contentSlide("Wrap-up", "REFERENCES", T_REV, "References & Image Credits", "참고 자료 및 이미지 출처");
     text(s, bl([
       [b("Main textbook: "), t("Audesirk, Audesirk & Byers, "), t("Biology: Life on Earth", { italic: true }), t(", Ch. 32 “Homeostasis and the Organization of the Animal Body” — 32.1 (English ed. pp. 604–609, Chapter Review pp. 617–618; Korean ed. pp. 602–607, 615–616).")],
@@ -1124,7 +991,255 @@ Kierann Smith도 "심각한 근육 손상과 일부 간 손상을 확인했을 �
       [b("Photos (Wikimedia Commons): "), t("desert pupfish — P. V. Loiselle (CC BY-SA 3.0); cinnamon hummingbird — Charles J. Sharp (CC BY-SA 4.0); green iguana — Cayambe (CC BY-SA 3.0); polar bear — Andreas Weith (CC BY-SA 4.0); Claude Bernard — public domain; Walter B. Cannon — Bachrach 1934 (CC BY 4.0).")],
       [b("Diagrams: "), t("negative feedback loop (after textbook Fig. 32-2), heat-stroke vicious cycle, Arctic ice loop, and schematic graphs were drawn for this presentation from the textbook text. Icons: react-icons (Font Awesome, Game-icons, Material, Tabler).")],
     ], { gap: 10, indent: 14 }), 0.6, 1.95, 12.13, 4.8, { fontSize: 15 });
-    s.addNotes(`참고 자료와 이미지 출처입니다. 사진과 OpenStax 그림은 모두 재사용 가능한 라이선스(CC BY / CC BY-SA / 퍼블릭 도메인)이며, 출처 표기가 조건입니다.`);
+    s.addNotes(NOTE("refs"));
+};
+
+// ================================================================ short-version slides
+// Merged slides that keep only the essential 32.1 textbook content.
+
+SL.caseShort = async () => {
+  const s = contentSlide(null, "CASE STUDY", T_CASE, "Case Study: Overheated", "과도한 열 — 열사병으로 쓰러진 대학 운동선수들");
+  const rows = [
+    { big: "41.1°C", who: "Kierann Smith · triathlete", what: "Collapsed in a 2011 collegiate triathlon. Ice water and ice packs brought her below 40°C — she survived.", col: C.accent3 },
+    { big: "41.6°C", who: "Ben Richards · wrestler", what: "Collapsed during a 5-mile training run (2013) and died 10 days later.", col: C.accent1 },
+    { big: "2014", who: "Marquese Meadow · football player", what: "Disoriented after practice; died in hospital. Autopsy: heat stroke.", col: C.accent1 },
+  ];
+  let y = 1.95;
+  for (const r of rows) {
+    card(s, 0.6, y, 6.25, 1.42, { fill: C.background2, r: 0.14 });
+    text(s, r.big, 0.72, y, 1.8, 1.42, { fontSize: 30, bold: true, color: r.col, fontFace: "+mj-lt", align: "center", valign: "middle" });
+    text(s, [b(r.who, { breakLine: true, color: C.text2 }), t(r.what, { fontSize: 14 })], 2.62, y + 0.08, 4.08, 1.26, { fontSize: 16, valign: "middle" });
+    y += 1.55;
+  }
+  card(s, 7.1, 1.95, 5.63, 4.52, { fill: C.text2, r: 0.16 });
+  await ic(s, fa.FaQuestionCircle, HEX.amber, 7.38, 2.17, 0.46, "questions");
+  text(s, [b("Questions for 32.1", { color: C.accent3 }), t("  이 절에서 답할 질문", { color: C.accent5, fontSize: 14 })], 7.98, 2.15, 4.6, 0.5, { fontSize: 18, valign: "middle" });
+  const qs = [
+    ["What is homeostasis?", "항상성이란 무엇인가?"],
+    ["What control mechanisms normally keep body temperature within narrow limits?", "어떤 조절작용이 체온을 좁은 범위 안에서 유지하는가?"],
+    ["Why must body temperature be closely regulated?", "왜 체온은 면밀히 조절되어야 하는가?"],
+    ["What happens to the body during heat stroke?", "열사병 동안 우리 몸은 어떻게 변하는가?"],
+  ];
+  qs.forEach((q, i) => {
+    const yy = 2.85 + i * 0.9;
+    s.addText(String(i + 1), { shape: S.OVAL, x: 7.38, y: yy + 0.04, w: 0.42, h: 0.42, fill: { color: C.accent3 }, line: { type: "none" }, fontSize: 14, bold: true, color: C.text1, align: "center", valign: "middle", margin: 0, isTextBox: true });
+    text(s, [t(q[0], { color: C.background1, breakLine: true }), t(q[1], { color: C.accent5, fontSize: 13 })], 7.98, yy, 4.6, 0.86, { fontSize: 15 });
+  });
+  s.addNotes(NOTE("caseShort"));
+};
+
+SL.whatShort = async () => {
+  const s = contentSlide(null, "PART 1 · WHAT & WHY", T_PART, "What Is Homeostasis?", "항상성이란 무엇인가?");
+  card(s, 0.6, 1.95, 12.13, 1.45, { fill: C.text2, r: 0.16 });
+  text(s, [b("Homeostasis ", { color: C.accent5 }), t("(항상성)", { color: C.accent5 }), t(" — the ability of an organism to maintain its internal environment within the narrow limits that allow optimal cell functioning.", { color: C.background1 })], 0.95, 2.03, 11.4, 0.88, { fontSize: 19, valign: "middle" });
+  text(s, "유기체가 세포의 적절한 기능을 위해 필요한 조건의 범위 속에서 내부 환경을 유지하려는 능력", 0.95, 2.93, 11.4, 0.36, { fontSize: 14, color: C.accent5 });
+  // who named it
+  const pw = 2.0, ph = 1.85, py = 3.65, px = [0.6, 2.85];
+  s.addImage({ data: await photo(PHOTO.bernard.f, pw, ph, { pos: "north", px: 600 }), x: px[0], y: py, w: pw, h: ph, altText: "Portrait of Claude Bernard" });
+  s.addImage({ data: await photo(PHOTO.cannon.f, pw, ph, { pos: "north", px: 600 }), x: px[1], y: py, w: pw, h: ph, altText: "Portrait of Walter B. Cannon" });
+  text(s, [b("Claude Bernard", { color: C.text2, breakLine: true }), t("mid-19th century — “internal constancy” (내부 불변성)", { fontSize: 12 })], px[0], py + ph + 0.06, pw + 0.12, 0.85, { fontSize: 14 });
+  text(s, [b("Walter Cannon", { color: C.text2, breakLine: true }), t("1920s — coined the term “homeostasis”", { fontSize: 12 })], px[1], py + ph + 0.06, pw + 0.12, 0.85, { fontSize: 14 });
+  credit(s, "Bernard: public domain · Cannon: Bachrach 1934, CC BY 4.0", 0.6, 6.5, 4.4);
+  // what it regulates
+  const rx = 5.3, rw = 7.43;
+  text(s, "Homeostatic mechanisms regulate …", rx, 3.6, rw, 0.38, { fontSize: 15, bold: true, color: C.text2, valign: "middle" });
+  const tiles = [
+    ["Temperature", "체온", fa.FaThermometerHalf, C.accent1],
+    ["Water & salt", "물과 염 농도", fa.FaTint, C.accent2],
+    ["Glucose", "포도당 농도", gi.GiCubes, C.accent3],
+    ["pH", "산-염기 균형", fa.FaFlask, C.accent6],
+    ["Hormones", "호르몬 분비", fa.FaVial, C.text2],
+    ["O₂ & CO₂", "산소·이산화탄소", fa.FaWind, C.accent4],
+  ];
+  const tW = (rw - 0.3) / 3, tH = 0.82;
+  for (let i = 0; i < 6; i++) {
+    const x = rx + (i % 3) * (tW + 0.15), y = 4.05 + Math.floor(i / 3) * (tH + 0.13);
+    card(s, x, y, tW, tH, { fill: C.background2, r: 0.12 });
+    await iconCircle(s, x + 0.14, y + 0.14, 0.54, tiles[i][2], { bg: tiles[i][3], name: tiles[i][0] });
+    text(s, [b(tiles[i][0], { breakLine: true }), t(tiles[i][1], { color: C.accent4, fontSize: 12 })], x + 0.8, y + 0.05, tW - 0.86, tH - 0.1, { fontSize: 14, valign: "middle" });
+  }
+  card(s, rx, 6.0, rw, 0.75, { fill: C.accent2, transparency: 86, r: 0.14 });
+  text(s, [b("Dynamic, not static", { color: C.accent2 }), t(" (동적인 평형상태) — e.g., exercise → ↑ respiratory rate, ↑ sweat-gland activity, ↑ blood flow to the skin")], rx + 0.2, 6.0, rw - 0.35, 0.75, { fontSize: 14, valign: "middle" });
+  s.addNotes(NOTE("whatShort"));
+};
+
+SL.ectoendoShort = async () => {
+  const s = contentSlide(null, "PART 2 · BODY TEMPERATURE", T_PART, "Ectotherms vs. Endotherms", "외온동물과 내온동물 — 열을 주로 어디서 얻는가에 따른 분류");
+  const cols = [
+    { x: 0.6, col: C.accent2, title: "ECTOTHERMS", kr: "외온동물 · Greek “outside heat”", I: fa.FaSun, src: [b("Heat source: "), t("mostly the environment (환경)")], ex: "reptiles (except birds), amphibians, most fish and invertebrates" },
+    { x: 6.77, col: C.accent1, title: "ENDOTHERMS", kr: "내온동물 · Greek “inside heat”", I: fa.FaFire, src: [b("Heat source: "), t("mostly metabolic reactions (대사반응)")], ex: "birds and mammals" },
+  ];
+  for (const c of cols) {
+    const w = 5.96, y = 1.95, h = 2.5;
+    card(s, c.x, y, w, h, { fill: c.col, transparency: 88, r: 0.16 });
+    await iconCircle(s, c.x + 0.3, y + 0.25, 0.85, c.I, { bg: c.col, name: c.title });
+    text(s, [b(c.title, { color: c.col, fontSize: 22, breakLine: true }), t(c.kr, { fontSize: 13, color: C.accent4 })], c.x + 1.35, y + 0.22, w - 1.6, 0.9, { valign: "middle" });
+    text(s, c.src, c.x + 0.3, y + 1.27, w - 0.6, 0.55, { fontSize: 15 });
+    text(s, [b("e.g., "), t(c.ex)], c.x + 0.3, y + 1.84, w - 0.6, 0.55, { fontSize: 15 });
+  }
+  text(s, [b("“Warm-blooded” and “cold-blooded” are misleading", { color: C.text2 }), t("   온혈·냉혈이라는 말은 오해의 소지가 있다", { color: C.accent4, fontSize: 13 })], 0.6, 4.6, 12.13, 0.38, { fontSize: 15, valign: "middle" });
+  const ex = [
+    { p: PHOTO.pupfish, x: 0.6, name: "Desert pupfish", kind: "“cold-blooded” fish", d: "over 37.8°C when the summer sun heats the springs and ponds it lives in", col: C.accent2 },
+    { p: PHOTO.humming, x: 6.77, name: "Hummingbird", kind: "“warm-blooded” bird", d: "up to 40.5°C while foraging by day, but may cool to 13°C at night", col: C.accent1 },
+  ];
+  for (const e of ex) {
+    const w = 5.96, y = 5.08, h = 1.67;
+    card(s, e.x, y, w, h, { fill: C.background2, r: 0.14 });
+    s.addImage({ data: await photo(e.p.f, 2.05, 1.37, { bg: HEX.light, px: 700 }), x: e.x + 0.15, y: y + 0.15, w: 2.05, h: 1.37, altText: e.name });
+    text(s, [b(e.name, { color: C.text2 }), t(" — " + e.kind, { color: e.col, bold: true, breakLine: true }), t(e.d, { fontSize: 14 })], e.x + 2.38, y + 0.12, w - 2.55, 1.15, { fontSize: 15 });
+    credit(s, e.p.credit.replace("Photo: ", "").replace(", via Wikimedia Commons", " · Wikimedia Commons"), e.x + 2.38, y + 1.33, w - 2.55);
+  }
+  s.addNotes(NOTE("ectoendoShort"));
+};
+
+SL.tempregShort = async () => {
+  const s = contentSlide(null, "PART 2 · BODY TEMPERATURE", T_PART, "How Animals Regulate Body Temperature", "동물들은 체온 조절 방식이 다르다");
+  const y0 = 1.95, h = 4.8;
+  // ectotherms
+  const lx = 0.6, lw = 7.0;
+  card(s, lx, y0, lw, h, { fill: C.accent2, transparency: 88, r: 0.16 });
+  text(s, [b("Ectotherms", { color: C.accent2, fontSize: 20 }), t("  외온동물 — body temperature varies with the environment", { color: C.accent4, fontSize: 13 })], lx + 0.25, y0 + 0.12, lw - 0.5, 0.5, { valign: "middle" });
+  const pw = 2.35, ph = 2.0;
+  s.addImage({ data: await photo(PHOTO.iguana.f, pw, ph, { px: 800, bg: "E4F1F3" }), x: lx + 0.25, y: y0 + 0.75, w: pw, h: ph, altText: "Green iguana basking on a rock" });
+  credit(s, "Cayambe, CC BY-SA 3.0 · Wikimedia", lx + 0.25, y0 + 0.75 + ph + 0.03, pw);
+  text(s, bl([
+    [t("Many (butterflies, bees, most lizards) cool down and become "), b("inactive at night"), t(", conserving energy")],
+    [t("At daybreak bees "), b("shiver"), t(", butterflies "), b("beat their wings"), t(", and lizards seek a "), b("warm, sunlit stone")],
+  ], { gap: 6, indent: 14 }), lx + 2.85, y0 + 0.75, lw - 3.1, 2.3, { fontSize: 14 });
+  text(s, bl([
+    [b("Behavior: "), t("bask in the sun to warm up, move to a shady spot to cool off")],
+    [b("Desert pupfish: "), t("breeds only in a narrow temperature range → swims to different areas of its pool")],
+    [b("Deep-sea fish: "), t("the water stays at about 0–3°C, so body temperature barely changes")],
+  ], { gap: 6, indent: 14 }), lx + 0.25, y0 + 3.1, lw - 0.5, 1.62, { fontSize: 14 });
+  // endotherms
+  const rx = 7.85, rw = 4.88;
+  card(s, rx, y0, rw, h, { fill: C.accent1, transparency: 88, r: 0.16 });
+  text(s, [b("Endotherms", { color: C.accent1, fontSize: 20 }), t("  내온동물", { color: C.accent4, fontSize: 13 })], rx + 0.25, y0 + 0.12, rw - 0.5, 0.5, { valign: "middle" });
+  text(s, "35–41°C", rx + 0.25, y0 + 0.68, rw - 0.5, 0.75, { fontSize: 36, bold: true, color: C.accent1, fontFace: "+mj-lt", valign: "middle" });
+  text(s, "a fairly constant body temperature (a few, like hummingbirds, let it fall at night)", rx + 0.25, y0 + 1.45, rw - 0.5, 0.62, { fontSize: 13 });
+  text(s, [b("Benefits", { color: C.accent2 }), t("  이점 — a warm body usually can …", { color: C.accent4, fontSize: 12 })], rx + 0.25, y0 + 2.15, rw - 0.5, 0.36, { fontSize: 15, valign: "middle" });
+  const ben = [[fa.FaEye, "sense its environment better"], [fa.FaBolt, "respond more quickly"], [fa.FaRunning, "move faster than a cold body"]];
+  for (let i = 0; i < 3; i++) {
+    const yy = y0 + 2.58 + i * 0.5;
+    await iconCircle(s, rx + 0.25, yy, 0.4, ben[i][0], { bg: C.accent2, name: ben[i][1] });
+    text(s, ben[i][1], rx + 0.8, yy, rw - 1.0, 0.4, { fontSize: 14, valign: "middle" });
+  }
+  text(s, [b("Cost", { color: C.accent1 }), t("  비용 — ", { color: C.accent4, fontSize: 12 }), t("the energy required to maintain a high body temperature")], rx + 0.25, y0 + 4.1, rw - 0.5, 0.62, { fontSize: 14 });
+  s.addNotes(NOTE("tempregShort"));
+};
+
+SL.negfbShort = async () => {
+  const s = contentSlide(null, "PART 3 · NEGATIVE FEEDBACK", T_PART, "Negative Feedback Reverses Change", "음성피드백은 변화의 효과를 역전시킨다");
+  text(s, [t("Internal conditions are regulated by "), b("feedback systems", { color: C.text2 }), t(" (피드백 시스템). There are two types:")], 0.6, 1.9, 12.13, 0.4, { fontSize: 16, valign: "middle" });
+  const cs = [
+    { x: 0.6, col: C.accent2, title: "Negative feedback", kr: "음성피드백", def: [t("A change triggers responses that "), b("counteract"), t(" it, returning the system to its original condition — the "), b("main mechanism of homeostasis"), t(".")], neg: true },
+    { x: 6.77, col: C.accent1, title: "Positive feedback", kr: "양성피드백", def: [t("Creates cycles in which changes "), b("amplify themselves"), t(". Relatively rare in living things.")], neg: false },
+  ];
+  for (const c of cs) {
+    const w = 5.96, y = 2.42, h = 2.0;
+    card(s, c.x, y, w, h, { fill: c.col, transparency: 89, r: 0.16 });
+    text(s, [b(c.title, { color: c.col, fontSize: 19 }), t("  " + c.kr, { color: C.accent4, fontSize: 14 })], c.x + 0.25, y + 0.12, 3.4, 0.45, { valign: "middle" });
+    text(s, c.def, c.x + 0.25, y + 0.62, 3.25, 1.3, { fontSize: 14 });
+    const gx = c.x + 3.62, gy = y + 0.35, gw = 2.12, gh = 1.35;
+    s.addShape(S.LINE, { x: gx, y: gy + gh, w: gw, h: 0, line: { color: C.accent4, width: 1 } });
+    s.addShape(S.LINE, { x: gx, y: gy, w: 0, h: gh, line: { color: C.accent4, width: 1 } });
+    s.addShape(S.LINE, { x: gx, y: gy + 0.85, w: gw, h: 0, line: { color: C.accent4, width: 1, dashType: "dash" } });
+    text(s, "set point", gx + gw - 0.9, gy + 0.87, 0.9, 0.22, { fontSize: 10, color: C.accent4, italic: true, align: "right" });
+    if (c.neg) curve(s, gx, gy, gw, gh, [[0, 0.85], [0.35, 0.18], [0.7, 1.22], [1.05, 0.58], [1.4, 1.0], [1.75, 0.8], [2.12, 0.85]], { color: C.accent2, width: 2.5 });
+    else s.addShape(S.CUSTOM_GEOMETRY, { x: gx, y: gy, w: gw, h: gh, points: [{ x: 0, y: 0.85 }, { x: 2.12, y: 0.02, curve: { type: "cubic", x1: 1.2, y1: 0.85, x2: 1.9, y2: 0.6 } }], line: { color: C.accent1, width: 2.5 } });
+  }
+  text(s, [b("All negative feedback systems have three components", { color: C.text2 }), t("   음성피드백의 세 가지 구성요소", { color: C.accent4, fontSize: 13 })], 0.6, 4.6, 12.13, 0.38, { fontSize: 15, valign: "middle" });
+  // descriptions are pre-broken into lines so no word (or Korean term) is split by automatic wrapping
+  const comp = [
+    { en: "Sensor", kr: "감지기", d: ["detects the current condition"], I: md.MdSensors },
+    { en: "Control center", kr: "조절 센터", d: ["compares it to the", "set point (설정점)"], I: fa.FaBrain },
+    { en: "Effector", kr: "효과기", d: ["produces an output that", "restores the condition"], I: fa.FaCogs },
+  ];
+  const cw = 3.75, gap = 0.44;
+  for (let i = 0; i < 3; i++) {
+    const x = 0.6 + i * (cw + gap), y = 5.08;
+    card(s, x, y, cw, 1.12, { fill: C.background2, r: 0.12 });
+    await iconCircle(s, x + 0.15, y + 0.24, 0.64, comp[i].I, { bg: C.accent2, name: comp[i].en });
+    const desc = comp[i].d.map((line, k) => t(line, { fontSize: 13, breakLine: k < comp[i].d.length - 1 }));
+    text(s, [b(comp[i].en, { color: C.accent2 }), t("  " + comp[i].kr, { color: C.accent4, fontSize: 12, breakLine: true }), ...desc], x + 0.92, y + 0.06, cw - 1.0, 1.0, { fontSize: 15, valign: "middle" });
+    if (i < 2) arrow(s, x + cw + 0.06, y + 0.56, x + cw + gap - 0.06, y + 0.56, { col: C.accent2, w: 2.25 });
+  }
+  text(s, [b("Examples: "), t("body temperature, blood glucose and salts, standing upright · a home thermostat, a toilet tank, cruise control")], 0.6, 6.32, 12.13, 0.42, { fontSize: 13, valign: "middle" });
+  s.addNotes(NOTE("negfbShort"));
+};
+
+SL.arcticShort = async () => {
+  const s = contentSlide(null, "EARTH WATCH", T_EARTH, "Positive Feedback in the Arctic", "북극의 양성피드백 — 얼음은 햇빛을 반사하고, 바닷물은 흡수한다");
+  const pw = 4.9, ph = 3.0;
+  s.addImage({ data: await photo(PHOTO.bear.f, pw, ph, { px: 1100 }), x: 0.6, y: 1.95, w: pw, h: ph, altText: "Polar bear on Arctic drift ice" });
+  text(s, "Polar bears depend on Arctic ice to hunt and rest.", 0.6, 4.99, pw, 0.28, { fontSize: 12, italic: true });
+  credit(s, PHOTO.bear.credit, 0.6, 5.26, pw);
+  const stats = [["2×", ["faster warming than", "the global average"], C.accent1], ["50%", ["thinner ice cap", "in 30 years"], C.accent2], ["35%", ["smaller ice area", "in 30 years"], C.accent2]];
+  const sw = (pw - 0.3) / 3;
+  stats.forEach(([big, d, col], i) => {
+    const x = 0.6 + i * (sw + 0.15), y = 5.6;
+    card(s, x, y, sw, 1.15, { fill: C.background2, r: 0.12 });
+    text(s, big, x, y + 0.05, sw, 0.58, { fontSize: 26, bold: true, color: col, fontFace: "+mj-lt", align: "center", valign: "middle" });
+    text(s, [t(d[0], { breakLine: true }), t(d[1])], x + 0.04, y + 0.63, sw - 0.08, 0.48, { fontSize: 11, align: "center" });
+  });
+  const rx = 5.85, rw = 6.88;
+  text(s, [t("Sea ice reflects "), b("50–70%"), t(" of sunlight (snow cover as much as "), b("80%"), t("); seawater reflects only "), b("5–10%", { color: C.accent1 }), t(" and absorbs the rest.")], rx, 1.92, rw, 0.75, { fontSize: 15 });
+  const cx = rx + rw / 2, cy = 4.6, rX = 2.15, rY = 1.4, nw = 2.45, nh = 0.85;
+  const nodes = [
+    { x: cx, y: cy - rY, en: "Arctic ice melts", kr: "북극의 얼음이 녹음", col: C.accent2 },
+    { x: cx + rX, y: cy, en: "More water exposed", kr: "더 많은 물이 드러남", col: C.text2 },
+    { x: cx, y: cy + rY, en: "Water absorbs more sunlight", kr: "더 많은 햇빛을 흡수", col: C.text2 },
+    { x: cx - rX, y: cy, en: "Water becomes warmer", kr: "물의 온도 상승", col: C.accent1 },
+  ];
+  for (const n of nodes) s.addText([b(n.en, { color: C.background1, breakLine: true }), t(n.kr, { color: C.background1, fontSize: 12 })], { shape: S.ROUNDED_RECTANGLE, x: n.x - nw / 2, y: n.y - nh / 2, w: nw, h: nh, rectRadius: 0.14, fill: { color: n.col }, line: { type: "none" }, fontSize: 14, align: "center", valign: "middle", margin: 0, isTextBox: true, objectName: "loop node: " + n.en });
+  const A = (x1, y1, x2, y2) => arrow(s, x1, y1, x2, y2, { col: C.accent1, w: 3 });
+  A(cx + nw / 2 + 0.05, cy - rY + 0.1, cx + rX - 0.25, cy - nh / 2 - 0.05);
+  A(cx + rX - 0.25, cy + nh / 2 + 0.05, cx + nw / 2 + 0.05, cy + rY - 0.1);
+  A(cx - nw / 2 - 0.05, cy + rY - 0.1, cx - rX + 0.25, cy + nh / 2 + 0.05);
+  A(cx - rX + 0.25, cy - nh / 2 - 0.05, cx - nw / 2 - 0.05, cy - rY + 0.1);
+  await ic(s, fa.FaSun, HEX.amber, cx - 0.3, cy - 0.58, 0.6, "sun");
+  text(s, [b("positive", { color: C.accent1, breakLine: true }), b("feedback", { color: C.accent1 })], cx - 0.9, cy + 0.06, 1.8, 0.55, { fontSize: 13, align: "center" });
+  text(s, "… and so on — a classic example of positive feedback", rx, 6.47, rw, 0.28, { fontSize: 12, italic: true, color: C.accent4, align: "center" });
+  s.addNotes(NOTE("arcticShort"));
+};
+
+SL.refsShort = async () => {
+  const s = contentSlide(null, "REFERENCES", T_REV, "References & Image Credits", "참고 자료 및 이미지 출처");
+  text(s, bl([
+    [b("Main textbook: "), t("Audesirk, Audesirk & Byers, "), t("Biology: Life on Earth", { italic: true }), t(", Ch. 32 “Homeostasis and the Organization of the Animal Body,” section 32.1 (English and Korean editions).")],
+    [b("Figures: "), t("OpenStax, "), t("Anatomy and Physiology 2e", { italic: true }), t(", Fig. 1.11; OpenStax, "), t("Biology 2e", { italic: true }), t(", Fig. 33.23 — openstax.org, CC BY 4.0.")],
+    [b("Photos (Wikimedia Commons): "), t("desert pupfish — P. V. Loiselle (CC BY-SA 3.0); cinnamon hummingbird — Charles J. Sharp (CC BY-SA 4.0); green iguana — Cayambe (CC BY-SA 3.0); polar bear — Andreas Weith (CC BY-SA 4.0); Claude Bernard — public domain; Walter B. Cannon — Bachrach 1934 (CC BY 4.0).")],
+    [b("Diagrams: "), t("the negative feedback loop (after textbook Fig. 32-2), the heat-stroke cycle, the Arctic loop, and the schematic graphs were drawn for this presentation from the textbook text.")],
+  ], { gap: 10, indent: 14 }), 0.6, 1.95, 12.13, 4.8, { fontSize: 15 });
+  s.addNotes(NOTE("refsShort"));
+};
+
+// ================================================================ variants
+// "§Name" starts a section; every other entry is a slide id from SL.
+const VARIANTS = {
+  full: ["§Opening", "title", "case", "roadmap", "§1. What & Why", "constancy", "what", "dynamic", "enzymes", "case2",
+    "§2. Body Temperature", "warmcold", "ectoendo", "ectocycle", "ectoreg", "endocost",
+    "§3. Negative Feedback", "twotypes", "negfb", "fig322", "hypo", "water",
+    "§4. Positive Feedback", "vicious", "posfb", "birth", "arctic1", "arctic2",
+    "§Wrap-up", "revisited", "keyconcepts", "quiz", "answers", "discuss", "refs"],
+  short: ["§Opening", "title", "caseShort", "§1. What & Why", "whatShort", "enzymes",
+    "§2. Body Temperature", "ectoendoShort", "tempregShort",
+    "§3. Negative Feedback", "negfbShort", "fig322", "hypo",
+    "§4. Positive Feedback", "vicious", "posfb", "birth", "arcticShort",
+    "§Wrap-up", "keyconcepts", "refsShort"],
+};
+
+async function build() {
+  for (const item of VARIANTS[VARIANT]) {
+    if (item.startsWith("§")) {
+      CURRENT_SECTION = item.slice(1);
+      pres.addSection({ title: CURRENT_SECTION });
+      continue;
+    }
+    if (!SL[item]) throw new Error(`unknown slide id "${item}"`);
+    const before = OUTLINE.length;
+    await SL[item]();
+    OUTLINE[before].id = item;
   }
 }
 
@@ -1186,4 +1301,21 @@ const ENZ_BROKEN = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300
   console.log("paragraphs repaired:", fixedParas);
   fs.writeFileSync(OUT, await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
   console.log("wrote", OUT);
+
+  // Export the short version's read-aloud script as a Markdown file next to the deck.
+  if (VARIANT === "short") {
+    const syllables = (str) => (str.match(/[가-힣]/g) || []).length + Math.ceil((str.match(/[A-Za-z]/g) || []).length / 3) + (str.match(/[0-9]/g) || []).length;
+    const total = OUTLINE.reduce((n, o) => n + syllables(NOTE(o.id)), 0);
+    const minutes = Math.round(total / 300); // ~300 syllables per minute of presenting
+    const md = [
+      "# 32.1 항상성 — 발표 대본 (짧은 버전)",
+      "",
+      `슬라이드 ${OUTLINE.length}장 · 그대로 읽으면 약 ${minutes}분. PowerPoint 슬라이드 노트에도 같은 대본이 들어 있습니다.`,
+      "",
+      ...OUTLINE.flatMap((o, i) => [`## ${i + 1}. ${o.title}`, "", `*${o.kr}*`, "", NOTE(o.id).split("\n").join("\n\n"), ""]),
+    ].join("\n");
+    const mdPath = OUT.replace(/\.pptx$/i, "_script.md");
+    fs.writeFileSync(mdPath, md);
+    console.log("wrote", mdPath, `(about ${minutes} min to read aloud)`);
+  }
 })().catch((e) => { console.error(e); process.exit(1); });
