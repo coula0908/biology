@@ -6,9 +6,9 @@
 | 파일 | 내용 |
 |---|---|
 | [`32.1_Homeostasis.pptx`](32.1_Homeostasis.pptx) | **발표용 (26장).** 교재 32.1의 본문 내용을 모두 담았고, 퀴즈·토론 슬라이드는 뺐습니다. |
-| [`32.1_Homeostasis_script.md`](32.1_Homeostasis_script.md) | 위 발표용 버전의 대본만 모은 파일 (연습·출력용, 그대로 읽으면 약 21분) |
+| [`32.1_Homeostasis_script.docx`](32.1_Homeostasis_script.docx) | **발표용 버전의 대본 (Word).** 그대로 읽으면 약 21분. 파트마다 새 페이지에서 시작해 발표자별로 나눠 출력하기 좋습니다. 같은 내용의 [`.md`](32.1_Homeostasis_script.md) 파일도 있습니다. |
 | [`32.1_Homeostasis_short.pptx`](32.1_Homeostasis_short.pptx) | 짧은 버전 (15장). 필수 내용만 남긴 버전으로, 시간이 부족할 때 씁니다. |
-| [`32.1_Homeostasis_short_script.md`](32.1_Homeostasis_short_script.md) | 짧은 버전의 대본 (약 12분) |
+| [`32.1_Homeostasis_short_script.docx`](32.1_Homeostasis_short_script.docx) | 짧은 버전의 대본 (Word, 약 12분). [`.md`](32.1_Homeostasis_short_script.md) 파일도 있습니다. |
 
 글꼴: 제목 Cambria, 본문 Calibri, 한글 맑은 고딕 (Windows·Office 기본 글꼴)
 
@@ -50,7 +50,7 @@
   - 슬라이드 디자인: `source/build.js`
   - 발표 대본: `source/notes_main.js`(발표용), `source/notes_short.js`(짧은 버전)
 
-  Node.js 18 이상에서 아래 명령을 실행하면 두 버전과 대본 파일이 다시 만들어집니다. (PowerPoint에서 직접 고친 내용은 덮어쓰이니 주의하세요.)
+  Node.js 18 이상에서 아래 명령을 실행하면 두 버전의 슬라이드와 대본 파일(Word, Markdown)이 다시 만들어집니다. (PowerPoint·Word에서 직접 고친 내용은 덮어쓰이니 주의하세요.)
 
   ```bash
   cd 32.1_homeostasis/source

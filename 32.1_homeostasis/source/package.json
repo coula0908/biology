@@ -10,6 +10,7 @@
     "build:short": "node build.js short"
   },
   "dependencies": {
+    "docx": "9.7.1",
     "pptxgenjs": "4.0.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",

@@ -1189,6 +1189,7 @@ async function build() {
     const before = OUTLINE.length;
     await SL[item]();
     OUTLINE[before].id = item;
+    OUTLINE[before].section = CURRENT_SECTION;
   }
 }
 
@@ -1271,5 +1272,68 @@ const ENZ_BROKEN = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300
     const mdPath = OUT.replace(/\.pptx$/i, "_script.md");
     fs.writeFileSync(mdPath, md);
     console.log("wrote", mdPath, `(about ${minutes} min to read aloud)`);
+
+    const docxPath = OUT.replace(/\.pptx$/i, "_script.docx");
+    fs.writeFileSync(docxPath, await scriptDocx(minutes));
+    console.log("wrote", docxPath);
   }
 })().catch((e) => { console.error(e); process.exit(1); });
+
+// ---------------------------------------------------------------- Word script
+// The same read-aloud script as a Word file: one page per part (easy to hand each presenter their part),
+// slide number + title + Korean subtitle above each slide's script.
+async function scriptDocx(minutes) {
+  const D = require("docx");
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Header, Footer, PageNumber, BorderStyle } = D;
+  const FONT = "맑은 고딕";
+  const LANG = { value: "en-US", eastAsia: "ko-KR" }; // Latin text breaks as English, Hangul as Korean
+  const PART = {
+    "Opening": "도입",
+    "1. What & Why": "Part 1 · 항상성이란 무엇이고, 왜 유지할까?",
+    "2. Body Temperature": "Part 2 · 외온동물과 내온동물은 어떻게 다를까?",
+    "3. Negative Feedback": "Part 3 · 음성피드백은 왜 중요할까?",
+    "4. Positive Feedback": "Part 4 · 양성피드백이란 무엇이고, 왜 드물까?",
+    "Wrap-up": "마무리",
+  };
+  const muted = (text, size = 20) => new TextRun({ text, size, color: HEX.slate });
+
+  const body = [
+    new Paragraph({ heading: HeadingLevel.TITLE, children: [new TextRun(`32.1 항상성 — 발표 대본${VARIANT === "short" ? " (짧은 버전)" : ""}`)] }),
+    new Paragraph({ spacing: { after: 60 }, children: [muted("Homeostasis: Why and How Do Animals Regulate Their Internal Environment?", 22)] }),
+    new Paragraph({
+      spacing: { after: 240 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "C9D3DC", space: 8 } },
+      children: [muted(`슬라이드 ${OUTLINE.length}장 · 그대로 읽으면 약 ${minutes}분 · PowerPoint 슬라이드 노트에도 같은 대본이 들어 있습니다.`)],
+    }),
+  ];
+  let lastPart = null;
+  OUTLINE.forEach((o, i) => {
+    if (o.section !== lastPart) {
+      body.push(new Paragraph({ heading: HeadingLevel.HEADING_1, pageBreakBefore: lastPart !== null, children: [new TextRun(PART[o.section] || o.section)] }));
+      lastPart = o.section;
+    }
+    body.push(new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun({ text: `슬라이드 ${i + 1}`, color: HEX.teal }), new TextRun(`   ${o.title}`)] }));
+    body.push(new Paragraph({ keepNext: true, spacing: { after: 120 }, children: [muted(o.kr)] }));
+    for (const line of NOTE(o.id).split("\n")) body.push(new Paragraph({ children: [new TextRun(line)] }));
+  });
+
+  const doc = new Document({
+    title: `32.1 항상성 — 발표 대본${VARIANT === "short" ? " (짧은 버전)" : ""}`,
+    description: "General Biology 32.1 Homeostasis — read-aloud presentation script",
+    styles: {
+      default: {
+        document: { run: { font: FONT, size: 24, language: LANG }, paragraph: { spacing: { line: 360, after: 160 } } },
+        title: { run: { font: FONT, size: 36, bold: true, color: HEX.navy }, paragraph: { spacing: { before: 0, after: 80 }, keepNext: true } },
+        heading1: { run: { font: FONT, size: 30, bold: true, color: HEX.navy }, paragraph: { spacing: { before: 120, after: 160 }, keepNext: true, outlineLevel: 0 } },
+        heading2: { run: { font: FONT, size: 25, bold: true, color: HEX.navy }, paragraph: { spacing: { before: 320, after: 40 }, keepNext: true, outlineLevel: 1 } },
+      },
+    },
+    sections: [{
+      properties: { page: { margin: { top: 1247, bottom: 1247, left: 1304, right: 1304 } } },
+      headers: { default: new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { after: 0 }, children: [muted("32.1 항상성 · 발표 대본", 16)] })] }) },
+      footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ children: [PageNumber.CURRENT, " / ", PageNumber.TOTAL_PAGES], size: 16, color: HEX.slate })] })] }) },
+      children: body,
+    }],
+  });
+  return Packer.toBuffer(doc);
+}
