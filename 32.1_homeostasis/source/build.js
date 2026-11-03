@@ -243,7 +243,8 @@ SL.title = async () => {
     text(s, "GENERAL BIOLOGY  ·  CHAPTER 32", 0.75, 1.55, 7, 0.35, { fontSize: 14, bold: true, color: C.accent3, charSpacing: 2 });
     text(s, "32.1", 0.75, 1.0, 3, 0.6, { fontSize: 30, bold: true, color: C.accent1 });
     s.addText("Homeostasis: Why and How Do Animals Regulate Their Internal Environment?", { placeholder: "title" });
-    s.addText("항상성: 동물은 왜 그리고 어떻게 자신의 내부 환경을 조절하는가?", { placeholder: "kr" });
+    // line break placed by the presenter in PowerPoint
+    s.addText([{ text: "항상성: 동물은 왜 그리고 어떻게" }, { text: "자신의 내부 환경을 조절하는가?", options: { softBreakBefore: true } }], { placeholder: "kr" });
     // thermal ring motif: cold half + hot half around a thermometer
     const cx = 10.55, cy = 3.75, D = 3.6;
     s.addShape(S.BLOCK_ARC, { x: cx - D / 2, y: cy - D / 2, w: D, h: D, angleRange: [95, 265], arcThicknessRatio: 0.16, fill: { color: C.accent5 }, line: { type: "none" }, objectName: "ring cold half" });
@@ -283,10 +284,11 @@ SL.case = async () => {
 SL.roadmap = async () => {
     const s = contentSlide("Opening", "OVERVIEW", T_REV, "Today’s Roadmap", "오늘 다룰 내용 — 교재의 학습 목표(Check Your Learning) 네 가지");
     const items = [
-      { n: "1", en: "What is homeostasis — and why do organisms maintain it?", kr: "항상성이란 무엇이고, 왜 유지할까?", I: fa.FaBalanceScale, col: C.text2 },
-      { n: "2", en: "How do ectotherms and endotherms differ?", kr: "외온동물과 내온동물은 어떻게 다를까?", I: fa.FaThermometerHalf, col: C.accent3 },
-      { n: "3", en: "Why is negative feedback crucial for homeostasis?", kr: "음성피드백은 왜 중요할까?", I: fa.FaSyncAlt, col: C.accent2 },
-      { n: "4", en: "What is positive feedback — and why is it rare?", kr: "양성피드백이란 무엇이고, 왜 드물까?", I: tb.TbArrowBigUpLines, col: C.accent1 },
+      // kr lines: line breaks placed by the presenter in PowerPoint
+      { n: "1", en: "What is homeostasis — and why do organisms maintain it?", kr: ["항상성이란 무엇이고,", "왜 유지할까?"], I: fa.FaBalanceScale, col: C.text2 },
+      { n: "2", en: "How do ectotherms and endotherms differ?", kr: ["외온동물과 내온동물은", "어떻게 다를까?"], I: fa.FaThermometerHalf, col: C.accent3 },
+      { n: "3", en: "Why is negative feedback crucial for homeostasis?", kr: ["음성피드백은", "왜 중요할까?"], I: fa.FaSyncAlt, col: C.accent2 },
+      { n: "4", en: "What is positive feedback — and why is it rare?", kr: ["양성피드백이란", "무엇이고, 왜 드물까?"], I: tb.TbArrowBigUpLines, col: C.accent1 },
     ];
     const w = 2.86, gap = 0.23;
     for (let i = 0; i < 4; i++) {
@@ -295,7 +297,7 @@ SL.roadmap = async () => {
       await iconCircle(s, x + 0.3, 2.3, 0.9, it.I, { bg: it.col, name: "part " + it.n });
       text(s, "PART " + it.n, x + 1.35, 2.48, 1.4, 0.5, { fontSize: 16, bold: true, color: it.col, valign: "middle" });
       text(s, it.en, x + 0.3, 3.45, w - 0.55, 1.5, { fontSize: 17, bold: true, color: C.text1 });
-      text(s, it.kr, x + 0.3, 5.0, w - 0.55, 0.7, { fontSize: 15, color: C.accent4 });
+      text(s, it.kr.map((line, k) => ({ text: line, options: k > 0 ? { softBreakBefore: true } : {} })), x + 0.3, 5.0, w - 0.55, 0.7, { fontSize: 15, color: C.accent4 });
     }
     card(s, 0.6, 6.12, 12.13, 0.62, { fill: C.accent3, transparency: 80, r: 0.31 });
     await ic(s, fa.FaRunning, HEX.ink, 0.88, 6.2, 0.46, "athlete");
@@ -677,7 +679,7 @@ SL.fig322 = async () => {
     const lbl = [
       { y1: 3.04, y2: 3.42, t1: "measured by", t2: "측정" },
       { y1: 4.02, y2: 4.42, t1: "sends data to", t2: "결과 전송" },
-      { y1: 5.02, y2: 5.52, t1: "if sensor and set point differ, activates", t2: "감지기와 설정점이 다르면 작동", two: true },
+      { y1: 5.02, y2: 5.52, t1: "if sensor and set point differ, activates", t2: "감지기가 측정한 온도와 설정점이 다르면 작동", two: true },
     ];
     for (const l of lbl) {
       arrow(s, mid, l.y1, mid, l.y2, { col: C.accent2, w: 2.5 });
