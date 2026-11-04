@@ -782,7 +782,8 @@ SL.arctic1 = async () => {
   text(s, "September 1984", 0.78, 1.6, 2.5, 0.34, { fontSize: 16, bold: true, color: HEX.white });
   text(s, "September 2012", 3.58, 1.6, 2.5, 0.34, { fontSize: 16, bold: true, color: HEX.white });
   text(s, FIG.nasaArctic.credit, 0.6, 3.4, 5.6, 0.28, { fontSize: 12, italic: true, color: C.accent4 });
-  s.addImage({ data: await photo(PHOTO.bear.f, 5.6, 2.3, { pos: "centre", px: 1200 }), x: 0.6, y: 3.78, w: 5.6, h: 2.3, altText: "Polar bear on Arctic drift ice" });
+  // crop from the top: the bear's head is near the top edge of the photo, so a centred crop cuts it off
+  s.addImage({ data: await photo(PHOTO.bear.f, 5.6, 2.3, { pos: "north", px: 1200 }), x: 0.6, y: 3.78, w: 5.6, h: 2.3, altText: "Polar bear on Arctic drift ice" });
   text(s, "Polar bears depend on Arctic ice to hunt and rest.", 0.6, 6.13, 5.6, 0.36, { fontSize: 16, italic: true });
   credit(s, PHOTO.bear.credit, 0.6, 6.55, 5.6);
   const x0 = 6.55, w0 = 6.18;
