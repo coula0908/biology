@@ -55,6 +55,10 @@ const FIG = {
   ap110: { f: P("figures/openstax_ap2e_fig1-10.jpg"), credit: "Figure: OpenStax, Anatomy and Physiology 2e, Fig. 1.10 (CC BY 4.0)" },
   ap111: { f: P("figures/openstax_ap2e_fig1-11.jpg"), credit: "Figure: OpenStax, Anatomy and Physiology 2e, Fig. 1.11 (CC BY 4.0)" },
   bio3323: { f: P("figures/openstax_bio2e_fig33-23.jpg"), credit: "Figure: OpenStax, Biology 2e, Fig. 33.23 (CC BY 4.0)" },
+  // open form of yeast hexokinase (left half of the PDB-101 figure; white background made transparent)
+  hexokinase: { f: P("figures/hexokinase_open_pdb101.png"), credit: "Hexokinase image: David S. Goodsell & RCSB PDB, Molecule of the Month (doi:10.2210/rcsb_pdb/mom_2004_2), CC BY 4.0" },
+  // npseaice_ssm_1984258.png + npseaice_am2_2012257.png side by side (NASA Earth Observatory, image of the day 79256)
+  nasaArctic: { f: P("figures/nasa_arctic_sea_ice_1984_2012.png"), credit: "September sea-ice minimum · NASA Earth Observatory (public domain)" },
 };
 
 const iconCache = new Map();
@@ -398,11 +402,11 @@ SL.enzymes = async () => {
     text(s, [b("① Structure ", { color: C.accent2 }), t("(구조)", { color: C.accent4 })], 0.85, 2.1, 5.9, 0.42, { fontSize: 19 });
     // explicit line breaks keep each Korean gloss on the line of its English term (widths measured)
     text(s, [t("Almost every reaction in a cell is catalyzed by a specific", { breakLine: true }), b("enzyme"), t(" (효소). Its function depends on its precise", { breakLine: true }), b("three-dimensional structure"), t(", maintained in part by", { breakLine: true }), b("hydrogen bonds", { color: C.accent2 }), t(" (수소결합).")], 0.85, 2.55, 5.9, 1.15, { fontSize: 15 });
-    const folded = await svgPng(ENZ_FOLDED, 700), broken = await svgPng(ENZ_BROKEN, 700);
-    s.addImage({ data: folded, x: 0.95, y: 3.75, w: 2.45, h: 1.75, altText: "Folded enzyme with substrate in its active site" });
+    const broken = await svgPng(ENZ_BROKEN, 700);
+    s.addImage({ path: FIG.hexokinase.f, x: 0.95, y: 3.75, w: 2.45, h: 1.75, altText: "Hexokinase enzyme (open form) with an arrow to its active-site cleft" });
     s.addImage({ data: broken, x: 4.15, y: 3.75, w: 2.45, h: 1.75, altText: "Unfolded enzyme with disrupted hydrogen bonds" });
     arrow(s, 3.5, 4.62, 4.05, 4.62, { col: C.accent1, w: 2.5 });
-    text(s, "works", 0.95, 5.5, 2.45, 0.3, { fontSize: 13, bold: true, color: C.accent2, align: "center" });
+    text(s, "works (hexokinase)", 0.95, 5.5, 2.45, 0.3, { fontSize: 13, bold: true, color: C.accent2, align: "center" });
     text(s, "bonds disrupted", 4.15, 5.5, 2.45, 0.3, { fontSize: 13, bold: true, color: C.accent1, align: "center" });
     // stressor chips (bottom row, left)
     const st = [["too salty", "염분 과다"], ["too acidic", "강산성"], ["too basic", "강염기성"], ["too hot", "고온"]];
@@ -425,6 +429,7 @@ SL.enzymes = async () => {
     const ccx = cx + 0.1;
     card(s, ccx, 6.2, 12.73 - ccx, 0.42, { fill: C.text2, r: 0.21 });
     text(s, [t("→ keep ", { color: C.background1 }), b("salt, pH & temperature", { color: C.accent3 }), t(" in narrow ranges", { color: C.background1 })], ccx + 0.1, 6.2, 12.73 - ccx - 0.2, 0.42, { fontSize: 13, valign: "middle", align: "center" });
+    credit(s, FIG.hexokinase.credit, 0.6, 6.68, 12.13);
     s.addNotes(NOTE("enzymes"));
 };
 
@@ -644,10 +649,11 @@ SL.fig322 = async () => {
     const Lx = 1.55, Lw = 3.05, Cx = 5.0, Cw = 3.35, Rx = 8.75, Rw = 3.98;
     const mid = Cx + Cw / 2;
     // column headers
-    await ic(s, fa.FaHome, HEX.slate, Lx, 1.86, 0.36, "house");
-    text(s, [b("House", { color: C.text2 }), t("  집", { color: C.accent4 })], Lx + 0.45, 1.86, 2.4, 0.36, { fontSize: 15, valign: "middle" });
-    await ic(s, fa.FaChild, HEX.slate, Rx, 1.86, 0.36, "body");
-    text(s, [b("Body", { color: C.text2 }), t("  몸", { color: C.accent4 })], Rx + 0.45, 1.86, 2.4, 0.36, { fontSize: 15, valign: "middle" });
+    // header positions as moved by the presenter in PowerPoint
+    await ic(s, fa.FaHome, HEX.slate, 2.072, 1.86, 0.36, "house");
+    text(s, [b("House", { color: C.text2 }), t("  집", { color: C.accent4 })], 2.518, 1.86, 2.4, 0.36, { fontSize: 15, valign: "middle" });
+    await ic(s, fa.FaChild, HEX.slate, 10.065, 1.86, 0.36, "body");
+    text(s, [b("Body", { color: C.text2 }), t("  몸", { color: C.accent4 })], 10.475, 1.86, 2.4, 0.36, { fontSize: 15, valign: "middle" });
     await ic(s, fa.FaSnowflake, HEX.teal, mid - 1.15, 1.86, 0.34, "cold");
     text(s, [b("stimulus: cold", { color: C.accent2 }), t("  자극: 추위", { color: C.accent4 })], mid - 0.75, 1.86, 2.6, 0.34, { fontSize: 14, valign: "middle" });
     arrow(s, mid, 2.22, mid, 2.42, { col: C.accent2, w: 2.5 });
@@ -826,8 +832,13 @@ SL.birth = async () => {
 
 SL.arctic1 = async () => {
     const s = contentSlide("4. Positive Feedback", "EARTH WATCH", T_EARTH, "Positive Feedback in the Arctic", "북극의 양성피드백 — 줄어드는 북극의 얼음");
-    const img = await photo(PHOTO.bear.f, 5.6, 4.35, { pos: "centre", px: 1200 });
-    s.addImage({ data: img, x: 0.6, y: 1.95, w: 5.6, h: 4.35, altText: "Polar bear on Arctic drift ice" });
+    // NASA satellite maps of the September minimum (1984 vs 2012) on top; polar bear photo underneath
+    s.addImage({ path: FIG.nasaArctic.f, x: 0.65, y: 1.95, w: 5.5, h: 1.8, altText: "NASA satellite maps of September Arctic sea-ice minimum, 1984 (left) and 2012 (right)" });
+    text(s, "September 1984", 0.78, 2.03, 2.4, 0.3, { fontSize: 13, bold: true, color: HEX.white });
+    text(s, "September 2012", 3.58, 2.03, 2.4, 0.3, { fontSize: 13, bold: true, color: HEX.white });
+    text(s, FIG.nasaArctic.credit, 0.6, 3.8, 5.6, 0.26, { fontSize: 11, italic: true, color: C.accent4 });
+    const img = await photo(PHOTO.bear.f, 5.6, 2.15, { pos: "centre", px: 1200 });
+    s.addImage({ data: img, x: 0.6, y: 4.15, w: 5.6, h: 2.15, altText: "Polar bear on Arctic drift ice" });
     text(s, "Polar bears depend on Arctic ice to hunt and rest.", 0.6, 6.33, 5.6, 0.3, { fontSize: 13, italic: true });
     credit(s, PHOTO.bear.credit, 0.6, 6.62, 5.6);
     const x0 = 6.55, w0 = 6.18;
@@ -938,7 +949,7 @@ SL.refs = async () => {
     const s = contentSlide("Wrap-up", "REFERENCES", T_REV, "References & Image Credits", "참고 자료 및 이미지 출처");
     text(s, bl([
       [b("Main textbook: "), t("Audesirk, Audesirk & Byers, "), t("Biology: Life on Earth", { italic: true }), t(", Ch. 32 “Homeostasis and the Organization of the Animal Body” — 32.1 (English ed. pp. 604–609, Chapter Review pp. 617–618; Korean ed. pp. 602–607, 615–616).")],
-      [b("Figures: "), t("OpenStax, "), t("Anatomy and Physiology 2e", { italic: true }), t(", Figs. 1.10 & 1.11; OpenStax, "), t("Biology 2e", { italic: true }), t(", Fig. 33.23 — openstax.org, licensed CC BY 4.0.")],
+      [b("Figures: "), t("OpenStax, "), t("Anatomy and Physiology 2e", { italic: true }), t(", Figs. 1.10 & 1.11; OpenStax, "), t("Biology 2e", { italic: true }), t(", Fig. 33.23 — openstax.org, licensed CC BY 4.0. Hexokinase structure (slide 7): David S. Goodsell & RCSB PDB, Molecule of the Month “The Glycolytic Enzymes” (doi:10.2210/rcsb_pdb/mom_2004_2), CC BY 4.0. Arctic sea-ice maps (slide 22): NASA Earth Observatory images by Jesse Allen (public domain).")],
       [b("Photos (Wikimedia Commons): "), t("desert pupfish — P. V. Loiselle (CC BY-SA 3.0); cinnamon hummingbird — Charles J. Sharp (CC BY-SA 4.0); green iguana — Cayambe (CC BY-SA 3.0); polar bear — Andreas Weith (CC BY-SA 4.0); Claude Bernard — public domain; Walter B. Cannon — Bachrach 1934 (CC BY 4.0).")],
       [b("Diagrams: "), t("negative feedback loop (after textbook Fig. 32-2), heat-stroke vicious cycle, Arctic ice loop, and schematic graphs were drawn for this presentation from the textbook text. Icons: react-icons (Font Awesome, Game-icons, Material, Tabler).")],
     ], { gap: 10, indent: 14 }), 0.6, 1.95, 12.13, 4.8, { fontSize: 15 });
@@ -1158,7 +1169,7 @@ SL.refsShort = async () => {
   const s = contentSlide(null, "REFERENCES", T_REV, "References & Image Credits", "참고 자료 및 이미지 출처");
   text(s, bl([
     [b("Main textbook: "), t("Audesirk, Audesirk & Byers, "), t("Biology: Life on Earth", { italic: true }), t(", Ch. 32 “Homeostasis and the Organization of the Animal Body,” section 32.1 (English and Korean editions).")],
-    [b("Figures: "), t("OpenStax, "), t("Anatomy and Physiology 2e", { italic: true }), t(", Fig. 1.11; OpenStax, "), t("Biology 2e", { italic: true }), t(", Fig. 33.23 — openstax.org, CC BY 4.0.")],
+    [b("Figures: "), t("OpenStax, "), t("Anatomy and Physiology 2e", { italic: true }), t(", Fig. 1.11; OpenStax, "), t("Biology 2e", { italic: true }), t(", Fig. 33.23 — openstax.org, CC BY 4.0. Hexokinase structure: David S. Goodsell & RCSB PDB, Molecule of the Month “The Glycolytic Enzymes” (doi:10.2210/rcsb_pdb/mom_2004_2), CC BY 4.0.")],
     [b("Photos (Wikimedia Commons): "), t("desert pupfish — P. V. Loiselle (CC BY-SA 3.0); cinnamon hummingbird — Charles J. Sharp (CC BY-SA 4.0); green iguana — Cayambe (CC BY-SA 3.0); polar bear — Andreas Weith (CC BY-SA 4.0); Claude Bernard — public domain; Walter B. Cannon — Bachrach 1934 (CC BY 4.0).")],
     [b("Diagrams: "), t("the negative feedback loop (after textbook Fig. 32-2), the heat-stroke cycle, the Arctic loop, and the schematic graphs were drawn for this presentation from the textbook text.")],
   ], { gap: 10, indent: 14 }), 0.6, 1.95, 12.13, 4.8, { fontSize: 15 });
@@ -1196,15 +1207,6 @@ async function build() {
 }
 
 // ---------------------------------------------------------------- illustrations (SVG)
-const ENZ_FOLDED = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" width="420" height="300">
-  <path d="M175 28 C255 22 318 62 322 112 L240 150 L322 188 C318 240 255 278 175 272 C92 268 48 215 48 150 C48 85 92 34 175 28 Z" fill="#${HEX.teal}"/>
-  <path d="M92 95 C140 52 228 62 262 104 C222 126 140 112 104 146 C76 172 120 196 182 186 C236 178 252 210 232 240" fill="none" stroke="#A9DCE2" stroke-width="11" stroke-linecap="round"/>
-  <g stroke="#ffffff" stroke-width="5" stroke-dasharray="8 7" stroke-linecap="round">
-    <line x1="140" y1="72" x2="140" y2="112"/><line x1="198" y1="70" x2="198" y2="110"/>
-    <line x1="120" y1="140" x2="128" y2="184"/><line x1="178" y1="128" x2="182" y2="178"/>
-  </g>
-  <polygon points="252,150 336,110 336,190" fill="#${HEX.amber}" stroke="#${HEX.amber}" stroke-width="12" stroke-linejoin="round"/>
-</svg>`;
 const ENZ_BROKEN = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" width="420" height="300">
   <path d="M24 170 C60 70 108 262 158 160 C204 64 248 70 290 160 C328 240 372 240 398 130" fill="none" stroke="#${HEX.coral}" stroke-width="16" stroke-linecap="round"/>
   <g stroke="#9AA6B2" stroke-width="5" stroke-dasharray="8 7" stroke-linecap="round">
@@ -1253,6 +1255,11 @@ const ENZ_BROKEN = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300
     const HANGUL_PAREN = /\((?=[가-힣])/.source;
     sx = sx.replace(/(<a:t(?:\s[^>]*)?>)([^<]*)(<\/a:t>)/g, (m, open, body, close) => open + body.replace(new RegExp(" " + HANGUL_PAREN, "g"), " (") + close);
     sx = sx.replace(new RegExp(" (</a:t></a:r><a:r>(?:(?!</a:r>)[\\s\\S])*?<a:t(?:\\s[^>]*)?>)" + HANGUL_PAREN, "g"), " $1(");
+    if (name === "ppt/slides/slide1.xml") {
+      const KR_BOX = '<a:off x="685800" y="4389120"/><a:ext cx="6949440" cy="822960"/>';
+      if (!sx.includes(KR_BOX)) throw new Error("title slide subtitle box not found");
+      sx = sx.replace(KR_BOX, '<a:off x="685800" y="4389120"/><a:ext cx="7315200" cy="822960"/>');
+    }
     zip.file(name, sx);
   }
   console.log("paragraphs repaired:", fixedParas);

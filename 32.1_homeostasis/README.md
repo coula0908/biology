@@ -35,6 +35,8 @@
 
 - 주 교재: Audesirk, Audesirk & Byers, *Biology: Life on Earth*, Ch. 32 (영문판 pp. 604–609, 617–618 / 한국어판 pp. 602–607, 615–616)
 - 그림: OpenStax *Anatomy and Physiology 2e* Fig. 1.10, 1.11 · OpenStax *Biology 2e* Fig. 33.23 — CC BY 4.0
+- 효소 구조(7장): 헥소키네이스 — David S. Goodsell & RCSB PDB, Molecule of the Month "The Glycolytic Enzymes" (doi:10.2210/rcsb_pdb/mom_2004_2), CC BY 4.0
+- 북극 해빙 위성 지도(22장): 1984년·2012년 9월 최소 면적 — NASA Earth Observatory (Jesse Allen), 퍼블릭 도메인
 - 사진 (Wikimedia Commons)
   - 사막 pupfish — P. V. Loiselle, CC BY-SA 3.0
   - 벌새(cinnamon hummingbird) — Charles J. Sharp, CC BY-SA 4.0
