@@ -671,7 +671,7 @@ SL.fig322 = async () => {
   }
   const by = 6.55, lx = 0.85, cy = 2.47;
   polyline(s, [[mid, 5.7 + rh], [mid, by], [lx, by], [lx, cy], [Cx + 0.17, cy]], { col: C.accent2, w: 2.75 });
-  text(s, [b(L("Effector changes the conditions to match set point", "효과기는 설정점을 맞추기 위해 조건을 변경"), { color: C.accent2 })], 1.05, by + 0.03, 8.0, 0.3, { fontSize: 16, valign: "middle" });
+  text(s, [b(L("Effector changes the conditions to match set point", "효과기는 온도를 설정점에 맞추기 위해 조건을 변경"), { color: C.accent2 })], 1.05, by + 0.03, 8.0, 0.3, { fontSize: 16, valign: "middle" });
   s.addNotes(NOTE("fig322"));
 };
 
