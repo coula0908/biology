@@ -1,11 +1,12 @@
 # 32.1 Homeostasis — 발표 자료
 
 일반생물학 32장 1절 **"Homeostasis: Why and How Do Animals Regulate Their Internal Environment? (항상성: 동물은 왜 그리고 어떻게 자신의 내부 환경을 조절하는가?)"** 발표용 슬라이드입니다.
-슬라이드는 영어로만 썼고(표지의 한국어 제목만 남김), 슬라이드 노트에 그대로 읽을 수 있는 한국어 발표 대본이 들어 있습니다.
+슬라이드는 영어로만 썼고(표지의 한국어 제목만 남김), 슬라이드 노트에 그대로 읽을 수 있는 한국어 발표 대본이 들어 있습니다. 같은 슬라이드를 한국어로 쓴 한글판도 있습니다.
 
 | 파일 | 내용 |
 |---|---|
 | [`32.1_Homeostasis.pptx`](32.1_Homeostasis.pptx) | **발표용 (26장).** 교재 32.1의 본문 내용을 모두 담았고, 퀴즈·토론 슬라이드는 뺐습니다. |
+| [`32.1_Homeostasis_Korean.pptx`](32.1_Homeostasis_Korean.pptx) | **한글판 (26장).** 발표용과 슬라이드 순서·배치·글씨 크기가 같고, 슬라이드 글만 한국어입니다. 용어는 교재 한국어판을 따랐고, CASE STUDY·HAVE YOU EVER WONDERED·EARTH WATCH 표제는 한국어판처럼 영어로 두었습니다. 슬라이드 노트(대본)도 발표용과 같아서 아래 대본 파일을 그대로 쓰면 됩니다. |
 | [`32.1_Homeostasis_script.docx`](32.1_Homeostasis_script.docx) | **발표용 버전의 대본 (Word).** 그대로 읽으면 약 21분. 파트마다 새 페이지에서 시작해 발표자별로 나눠 출력하기 좋습니다. 슬라이드마다 제목 아래에 한국어 부제가 있습니다. 같은 내용의 [`.md`](32.1_Homeostasis_script.md) 파일도 있습니다. |
 | [`32.1_Homeostasis_short.pptx`](32.1_Homeostasis_short.pptx) | 짧은 버전 (15장, 지금은 쓰지 않음). 필수 내용만 남긴 예전 버전으로, 글씨 키우기·한국어 정리는 반영하지 않았습니다. |
 | [`32.1_Homeostasis_short_script.docx`](32.1_Homeostasis_short_script.docx) | 짧은 버전의 대본 (Word, 약 12분). [`.md`](32.1_Homeostasis_short_script.md) 파일도 있습니다. |
@@ -49,10 +50,10 @@
 
 - **간단한 수정**: PowerPoint에서 `.pptx`를 바로 고치면 됩니다.
 - **스크립트로 다시 만들기**: [`source/`](source) 폴더에 생성 스크립트와 이미지가 있습니다.
-  - 슬라이드 디자인: `source/build.js`
+  - 슬라이드 디자인: `source/build.js` (슬라이드의 모든 글이 `L(영어, 한국어)` 형태로 함께 들어 있어, 한 곳만 고치면 두 판이 같이 바뀝니다)
   - 발표 대본: `source/notes_main.js` (몇몇 슬라이드의 대본은 `source/notes_short.js`에 있고, `notes_main.js`가 그대로 가져다 씁니다)
 
-  Node.js 18 이상에서 아래 명령을 실행하면 발표용 슬라이드와 대본 파일(Word, Markdown)이 다시 만들어집니다. 짧은 버전은 더 이상 만들지 않습니다. (PowerPoint·Word에서 직접 고친 내용은 덮어쓰이니 주의하세요.)
+  Node.js 18 이상에서 아래 명령을 실행하면 발표용·한글판 슬라이드와 대본 파일(Word, Markdown)이 다시 만들어집니다. 짧은 버전은 더 이상 만들지 않습니다. (PowerPoint·Word에서 직접 고친 내용은 덮어쓰이니 주의하세요.)
 
   ```bash
   cd 32.1_homeostasis/source
