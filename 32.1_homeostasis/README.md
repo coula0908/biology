@@ -1,16 +1,17 @@
 # 32.1 Homeostasis — 발표 자료
 
 일반생물학 32장 1절 **"Homeostasis: Why and How Do Animals Regulate Their Internal Environment? (항상성: 동물은 왜 그리고 어떻게 자신의 내부 환경을 조절하는가?)"** 발표용 슬라이드입니다.
-영어 슬라이드에 교재(한국어판) 용어를 병기했고, 슬라이드 노트에 그대로 읽을 수 있는 발표 대본이 들어 있습니다.
+슬라이드는 영어로만 썼고(표지의 한국어 제목만 남김), 슬라이드 노트에 그대로 읽을 수 있는 한국어 발표 대본이 들어 있습니다.
 
 | 파일 | 내용 |
 |---|---|
 | [`32.1_Homeostasis.pptx`](32.1_Homeostasis.pptx) | **발표용 (26장).** 교재 32.1의 본문 내용을 모두 담았고, 퀴즈·토론 슬라이드는 뺐습니다. |
-| [`32.1_Homeostasis_script.docx`](32.1_Homeostasis_script.docx) | **발표용 버전의 대본 (Word).** 그대로 읽으면 약 21분. 파트마다 새 페이지에서 시작해 발표자별로 나눠 출력하기 좋습니다. 같은 내용의 [`.md`](32.1_Homeostasis_script.md) 파일도 있습니다. |
-| [`32.1_Homeostasis_short.pptx`](32.1_Homeostasis_short.pptx) | 짧은 버전 (15장). 필수 내용만 남긴 버전으로, 시간이 부족할 때 씁니다. |
+| [`32.1_Homeostasis_script.docx`](32.1_Homeostasis_script.docx) | **발표용 버전의 대본 (Word).** 그대로 읽으면 약 21분. 파트마다 새 페이지에서 시작해 발표자별로 나눠 출력하기 좋습니다. 슬라이드마다 제목 아래에 한국어 부제가 있습니다. 같은 내용의 [`.md`](32.1_Homeostasis_script.md) 파일도 있습니다. |
+| [`32.1_Homeostasis_short.pptx`](32.1_Homeostasis_short.pptx) | 짧은 버전 (15장, 지금은 쓰지 않음). 필수 내용만 남긴 예전 버전으로, 글씨 키우기·한국어 정리는 반영하지 않았습니다. |
 | [`32.1_Homeostasis_short_script.docx`](32.1_Homeostasis_short_script.docx) | 짧은 버전의 대본 (Word, 약 12분). [`.md`](32.1_Homeostasis_short_script.md) 파일도 있습니다. |
 
 글꼴: 제목 Cambria, 본문 Calibri, 한글 맑은 고딕 (Windows·Office 기본 글꼴)
+글씨 크기: 제목 36pt, 본문 18–24pt, 보조 설명·도식 라벨 15–17pt, 이미지 출처 10–12pt
 
 ## 발표용 버전 구성 (26장)
 
@@ -35,7 +36,6 @@
 
 - 주 교재: Audesirk, Audesirk & Byers, *Biology: Life on Earth*, Ch. 32 (영문판 pp. 604–609, 617–618 / 한국어판 pp. 602–607, 615–616)
 - 그림: OpenStax *Anatomy and Physiology 2e* Fig. 1.10, 1.11 · OpenStax *Biology 2e* Fig. 33.23 — CC BY 4.0
-- 효소 구조(7장): 헥소키네이스 — David S. Goodsell & RCSB PDB, Molecule of the Month "The Glycolytic Enzymes" (doi:10.2210/rcsb_pdb/mom_2004_2), CC BY 4.0
 - 북극 해빙 위성 지도(22장): 1984년·2012년 9월 최소 면적 — NASA Earth Observatory (Jesse Allen), 퍼블릭 도메인
 - 사진 (Wikimedia Commons)
   - 사막 pupfish — P. V. Loiselle, CC BY-SA 3.0
@@ -50,9 +50,9 @@
 - **간단한 수정**: PowerPoint에서 `.pptx`를 바로 고치면 됩니다.
 - **스크립트로 다시 만들기**: [`source/`](source) 폴더에 생성 스크립트와 이미지가 있습니다.
   - 슬라이드 디자인: `source/build.js`
-  - 발표 대본: `source/notes_main.js`(발표용), `source/notes_short.js`(짧은 버전)
+  - 발표 대본: `source/notes_main.js` (몇몇 슬라이드의 대본은 `source/notes_short.js`에 있고, `notes_main.js`가 그대로 가져다 씁니다)
 
-  Node.js 18 이상에서 아래 명령을 실행하면 두 버전의 슬라이드와 대본 파일(Word, Markdown)이 다시 만들어집니다. (PowerPoint·Word에서 직접 고친 내용은 덮어쓰이니 주의하세요.)
+  Node.js 18 이상에서 아래 명령을 실행하면 발표용 슬라이드와 대본 파일(Word, Markdown)이 다시 만들어집니다. 짧은 버전은 더 이상 만들지 않습니다. (PowerPoint·Word에서 직접 고친 내용은 덮어쓰이니 주의하세요.)
 
   ```bash
   cd 32.1_homeostasis/source
